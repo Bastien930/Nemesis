@@ -1,0 +1,66 @@
+//
+// Created by bastien on 10/21/25.
+//
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <getopt.h>
+#include <time.h>
+#include "../Include/main.h"
+
+#include "../Include/Config.h"
+#include "../Include/Option.h"
+#include "../Include/Utils.h"
+#include <unistd.h>
+
+#define RED(string) "\x1b[31m" string "\x1b[0m"
+
+struct da_config_t da_config = {0};
+
+int main(int argc, char* argv[]){
+
+    char errbuff[DA_ERRLEN];
+
+    print_banner();
+    sleep(10);
+    da_config_init_default(&da_config);
+
+    if (parse_args(argc, argv, &da_config) != 0) {
+        return EXIT_FAILURE;
+    }
+    if (da_config_validate(&da_config,errbuff,DA_ERRLEN) != 0) {
+        puts(errbuff);
+        return EXIT_FAILURE;
+    }
+
+    /*
+    int opt;
+    static struct option long_options[] = {
+        {"bruteforce", no_argument, 0, 'b'}, //bruteforce "naif"
+        {"mangling", required_argument, 0, 'm'}, //le mangling obligatoirement : un argument qui est un entier (pour le nombre de fois...) A DEFINIR
+        {"help", no_argument, 0, 'h'}, //le help : juste de l'aide
+        {0, 0, 0, 0}
+    };
+
+    while ((opt = getopt_long(argc, argv, "bm:h", long_options, NULL)) != -1) {
+        switch(opt) {
+        case 'b':
+            printf("Generation du bruteforce dans 3sec...\n");
+            sleep(3);
+            init_bruteforce();
+            break;
+        case 'm':
+            printf("Le mangling va commencer pour %s iterations de caracteres dans 3sec...\n", optarg); //optarg est une variable globale : si on met un chiffre ("3"), il va le stocker : important pour la suite
+            sleep(3);
+            break;
+        case 'h':
+            printf("Pour utiliser : ./programme [--bruteforce] OU [--mangling CHIFFRE] OU [--help]\n");
+            exit(0);
+        default:
+            fprintf(stderr, RED("L'option n'est pas connue !\n"));
+            exit(1);
+        }
+    }
+    */
+    return 0;
+}
