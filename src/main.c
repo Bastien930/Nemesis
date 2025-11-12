@@ -6,12 +6,16 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <time.h>
+#include <string.h>
 #include "../Include/main.h"
 
 #include "../Include/Config.h"
 #include "../Include/Option.h"
 #include "../Include/Utils.h"
+#include "../Include/Hash_Engine.h"
+#include "../Include/Mangling.h"
 #include <unistd.h>
+#include <crypt.h>
 
 #define RED(string) "\x1b[31m" string "\x1b[0m"
 
@@ -21,17 +25,42 @@ int main(int argc, char* argv[]){
 
     char errbuff[DA_ERRLEN];
 
-    print_banner();
-    sleep(10);
+    //print_banner();
+    //sleep(10);
     da_config_init_default(&da_config);
+
+
+
+
 
     if (parse_args(argc, argv, &da_config) != 0) {
         return EXIT_FAILURE;
     }
-    if (da_config_validate(&da_config,errbuff,DA_ERRLEN) != 0) {
-        puts(errbuff);
-        return EXIT_FAILURE;
-    }
+    //if (da_config_validate(&da_config,errbuff,DA_ERRLEN) != 0) {
+    //    puts(errbuff);
+    //    return EXIT_FAILURE;
+    //}
+
+    // ===== temporaire ====== //
+    const char *password = "Password123";
+    char *hashed = "uPC3x7H6BVL5jdWZGWSqAZuS7F2f2qNXwtLqocfjC50"; // commande pour hash openssl passwd -5 -salt abcd1234 Password123
+    struct da_shadow_entry *e = malloc(sizeof(*e));
+    e->username = strdup("user");
+    e->hash     = strdup(hashed); // $5 sha 256
+    e->salt     = strdup("$y$j9T$abcd1234$");
+    e->algo     = DA_HASH_SHA256;
+    printf("%s\n%s\n%s\n",e->username,e->hash,e->salt);
+    if (!da_hash_engine_init(e)) perror("engine init");
+    print_usage_example(1);
+    free(e->username);
+    free(e->hash);
+    free(e->salt);
+    free(e);
+
+    char buff[MAX_WORD_LEN];
+    get_found_password(buff,MAX_WORD_LEN);
+    printf("le password trouve est : %s\n",buff);
+
 
     /*
     int opt;
@@ -64,3 +93,28 @@ int main(int argc, char* argv[]){
     */
     return 0;
 }
+/*int main(int argc, char **argv) {
+    const char *pwd = (argc > 1) ? argv[1] : "motdepasse_test";
+
+
+    const char *salt = "$y$j9T$abcd1234$";
+
+    char *res = crypt(pwd, salt);
+
+    if (res == NULL) {
+        perror("crypt");
+        return 2;
+    }
+
+    printf("Password : %s\n", pwd);
+    printf("Salt     : %s\n", salt);
+    printf("Hash     : %s\n", res);
+
+    if (strncmp(res, "$y$", 3) == 0) {
+        puts("=> yescrypt DETECTÉ (hash commence par $y$)");
+    } else {
+        puts("=> yescrypt NON détecté (hash n'utilise pas le préfixe $y$)");
+    }
+
+    return 0;
+}*/

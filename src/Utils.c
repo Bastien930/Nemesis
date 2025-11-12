@@ -4,9 +4,12 @@
 
 
 #include "Utils.h"
-
+#include "Shadow.h"
 #include <stdio.h>
 #include <unistd.h> // pour usleep()
+#include <stdatomic.h>
+#include <pthread.h>
+#include <stdbool.h>
 
 #include <stdio.h>
 #include <unistd.h> // pour usleep()
@@ -14,14 +17,37 @@
 #define RED   "\x1b[31m"
 #define RESET "\x1b[0m"
 
-static inline bool da_hash_into(const char *input, enum da_hash_algo algo, char *out, int out_size)
-{
-    ;
+#include <string.h>
+
+/* définition des variables globales */
+atomic_int g_password_found = 0;
+
+char g_found_password[MAX_WORD_LEN] = {0};
+pthread_mutex_t g_found_password_lock = PTHREAD_MUTEX_INITIALIZER;
+
+void set_found_password(const char *pw) {
+    if (!pw) return;
+
+    pthread_mutex_lock(&g_found_password_lock);
+    strncpy(g_found_password, pw, MAX_WORD_LEN - 1);
+    g_found_password[MAX_WORD_LEN - 1] = '\0';
+    pthread_mutex_unlock(&g_found_password_lock);
+
+    // lever le flag atomiquement
+    atomic_store_explicit(&g_password_found, 1, memory_order_release);
 }
 
-static inline bool da_hash_matches(const char *candidate, const char *target_hash, enum da_hash_algo algo)
-{
-    ;
+bool is_password_found(void) {
+    return atomic_load_explicit(&g_password_found, memory_order_acquire);
+}
+
+// Lecture sécurisée du mot de passe
+void get_found_password(char *buf, size_t bufsize) {
+    if (!buf || bufsize == 0) return;
+
+    pthread_mutex_lock(&g_found_password_lock);
+    snprintf(buf, bufsize, "%s", g_found_password);
+    pthread_mutex_unlock(&g_found_password_lock);
 }
 
 
