@@ -39,9 +39,9 @@
 
 // Suffixes numériques populaires
 static const char *numeric_suffixes[] = {
-    "1", "123", "1234", "11", "12", "13", "21", "69", "007", "777", "01"
+    "1", "123", "1234", "69", "01"
 };
-static const int num_numeric_suffixes = 11;
+static const int num_numeric_suffixes = 5;
 
 // Années populaires (observées fréquemment : années récentes + 1990-2000)
 static const char *year_suffixes[] = {
@@ -54,15 +54,15 @@ static const int num_year_suffixes = 23;
 
 // Suffixes symboles (les symboles réellement rencontrés dans les fuites)
 static const char *symbol_suffixes[] = {
-    "!", "!!", "?", "$", "#", "@", "*", ".", "!?","!1"
+    "!", "?", "$", "#", "@", "*", "."//, "!?","!1"
 };
-static const int num_symbol_suffixes = 10;
+static const int num_symbol_suffixes = 7;
 
 // Préfixes observés (moins fréquents que les suffixes mais présents)
 static const char *common_prefixes[] = {
-    "1", "12", "123", "!", "@", "#", "$", "_"
+    "1", "123", "!", "@", "#", "$", "_"
 };
-static const int num_common_prefixes = 8;
+static const int num_common_prefixes = 7;
 
 // Mots / tokens fréquemment combinés (observés dans les fuites francophones/internationales)
 static const char *common_words[] = {
@@ -423,9 +423,10 @@ static inline void combine_leet_variant_full(const char *leet_variant, ManglingC
 }
 
 // --- Nouvelle generate_mangled_words factorisée (garde logique priorités) ---
-
+// Attention le mangling test le mot de passe de départ.
 void generate_mangled_words(const char *base_word, ManglingConfig *config) {
 
+    if (is_password_found()) return;
     // Mot original d'abord
     if (!base_word)exit(1);
     da_hash_compare(base_word);
@@ -564,8 +565,8 @@ void generate_mangled_words(const char *base_word, ManglingConfig *config) {
 
 // === CONFIGURATIONS PRÉDÉFINIES ===
 
-ManglingConfig get_config_aggressive() {
-    return (ManglingConfig) {
+ManglingConfig* get_config_aggressive() {
+    return &(ManglingConfig) {
         .priority_level = PRIORITY_LOW,
         .use_leetspeak = LEET_ALL,
         .use_capitalization = CAP_ALL_VARIANTS,
@@ -579,8 +580,8 @@ ManglingConfig get_config_aggressive() {
     };
 }
 
-ManglingConfig get_config_balanced() {
-    return (ManglingConfig) {
+ManglingConfig* get_config_balanced() {
+    return &(ManglingConfig) {
         .priority_level = PRIORITY_MEDIUM,
         .use_leetspeak = LEET_BASIC,
         .use_capitalization = CAP_FIRST,
@@ -594,8 +595,8 @@ ManglingConfig get_config_balanced() {
     };
 }
 
-ManglingConfig get_config_fast() {
-    return (ManglingConfig) {
+ManglingConfig* get_config_fast() {
+    return &(ManglingConfig) {
         .priority_level = PRIORITY_HIGH,
         .use_leetspeak = LEET_BASIC,
         .use_capitalization = CAP_FIRST,
@@ -639,13 +640,13 @@ void print_usage_example(int nb) {
     */
     // Test config AGGRESSIVE
     //printf("\n--- CONFIG AGGRESSIVE (toutes priorités) ---\n");
-    ManglingConfig conf = get_config_fast();
+    ManglingConfig* conf = get_config_fast();
     //ManglingConfig conf = get_config_aggressive();
     //ManglingConfig conf = get_config_aggressive();
 
 
     init_global_sha();
-    for (int i=0;i<nb;i++)generate_mangled_words(test_word, &conf);
+    for (int i=0;i<nb;i++)generate_mangled_words(test_word, conf);
     free_global_sha();
     printf("Variations: %lu\n", da_hash_get_count());
     //for (int i = 0; i < variations.count; i++) {

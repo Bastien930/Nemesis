@@ -33,7 +33,7 @@ static inline bool da_hash_compare(const char *password) {
     //printf("%s\n",password);
     //return da_compare_fn(password);
     if ( da_compare_fn(password)) {
-        //set_found_password(password);
+        set_found_password(password);
         return true;
     }
     return false;

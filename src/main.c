@@ -51,7 +51,7 @@ int main(int argc, char* argv[]){
     e->algo     = DA_HASH_SHA256;
     printf("%s\n%s\n%s\n",e->username,e->hash,e->salt);
     if (!da_hash_engine_init(e)) perror("engine init");
-    print_usage_example(1);
+    generate_mangled_words("password",get_config_aggressive());
     free(e->username);
     free(e->hash);
     free(e->salt);
@@ -60,6 +60,7 @@ int main(int argc, char* argv[]){
     char buff[MAX_WORD_LEN];
     get_found_password(buff,MAX_WORD_LEN);
     printf("le password trouve est : %s\n",buff);
+    printf("Variations: %lu\n", da_hash_get_count());
 
 
     /*

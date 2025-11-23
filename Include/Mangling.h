@@ -24,5 +24,9 @@ typedef struct {
 void generate_mangled_words(const char *base_word, ManglingConfig *config);
 void print_usage_example(int nb) ;
 
+ManglingConfig* get_config_aggressive() ;
+ManglingConfig* get_config_balanced() ;
+ManglingConfig* get_config_fast() ;
+
 
 #endif //DA_MANGLING_H
