@@ -28,5 +28,4 @@ void set_found_password(const char *pw);    /* safe: store + set flag */
 bool is_password_found(void);               /* atomic load */
 void get_found_password(char *buf, size_t bufsize) ;
 
-
 #endif //DA_UTILS_H

@@ -14,6 +14,7 @@
 #include "../Include/Utils.h"
 #include "../Include/Hash_Engine.h"
 #include "../Include/Mangling.h"
+#include "../Include/log.h"
 #include <unistd.h>
 #include <crypt.h>
 
@@ -44,6 +45,7 @@ int main(int argc, char* argv[]){
     // ===== temporaire ====== //
     const char *password = "Password123";
     char *hashed = "uPC3x7H6BVL5jdWZGWSqAZuS7F2f2qNXwtLqocfjC50"; // commande pour hash openssl passwd -5 -salt abcd1234 Password123
+    if (!init_log("../log.txt",LOG_DEBUG)) perror("log init");
     struct da_shadow_entry *e = malloc(sizeof(*e));
     e->username = strdup("user");
     e->hash     = strdup(hashed); // $5 sha 256

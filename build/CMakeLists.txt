@@ -25,6 +25,8 @@ add_executable(DA
         ../src/Hash_Engine.c
         ../Include/Hash_Engine.h
         ../Include/Mangling.h
+        ../Include/log.h
+        ../src/log.c
 )
 
 target_link_libraries(DA crypto) #pour open/ssl

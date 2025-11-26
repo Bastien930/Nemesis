@@ -13,19 +13,27 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "log.h"
+
 /* === Définition des globals === */
 const char *da_hash = NULL;
 const char *da_salt = NULL;
-unsigned long da_hash_count = 0;
-da_hash_compare_fn da_compare_fn = NULL;
+long da_hash_count = 0;
+//da_hash_compare_fn da_compare_fn = NULL;
 
 /* stockage binaire du hash cible / salt */
-static unsigned char *da_hash_bin = NULL;
+//static unsigned char *da_hash_bin = NULL;
 static size_t da_hash_len = 0;
-static unsigned char *da_salt_bin = NULL;
+//static unsigned char *da_salt_bin = NULL;
 static size_t da_salt_len = 0;
 
-/* helper : convertit une chaîne hex -> binaire */
+static inline int fast_eq_memcmp(const void *a, const void *b, size_t len) {
+    if (len == 0) return 1;
+    return memcmp(a, b, len) == 0;
+}
+
+
+/* helper : convertit une chaîne hex -> binaire
 static int hex_to_bin(const char *hex, unsigned char **out, size_t *out_len) {
     if (!hex) return -1;
     size_t len = strlen(hex);
@@ -88,14 +96,11 @@ static int base64_to_bin(const char *base64, unsigned char **out, size_t *out_le
     return 0;
 }
 
-static inline int fast_eq_memcmp(const void *a, const void *b, size_t len) {
-    if (len == 0) return 1;
-    return memcmp(a, b, len) == 0;
-}
 
 
 
-/* helper générique pour hasher un buffer avec OpenSSL EVP */
+
+ helper générique pour hasher un buffer avec OpenSSL EVP
 static EVP_MD_CTX *global_sha_ctx = NULL;
 
 // Initialisation (à appeler une fois au début du programme)
@@ -134,35 +139,18 @@ static int evp_hash(const EVP_MD *md,
 
     *out_len = olen;
     return 0;
-}
+}*/
 
 /* === Fonctions de hash concrètes (une par algo) === */
 
-const char *extract_crypt_hash_part(const char *crypt_res) {
-    if (!crypt_res) return NULL;
-    /* find last '$' */
-    const char *last = strrchr(crypt_res, '$');
-    if (!last) return NULL;
-    return last + 1;
-}
-
-bool sha256_compare_fn(const char *password) {
+bool da_crypt(const char *password) {
     char *crypt_res = crypt(password, da_salt);
-    if (!crypt_res) return false;
-    if (strcmp(password,"Password123")==0) {
-        printf("hash original : %s\n",da_hash);
-        printf("hash calculé : %s\n",crypt_res);
-        printf("salt : %s\n",da_salt);
-        printf("password : %s\n",password);
-
-    }
+    if (!crypt_res) {write_log(LOG_WARNING,strcat("Erreur lors de crypt pour le mot de passe : ",password),"da_crypt"); return false;}
     /* 2) extraire la partie hash encodée (dernier champ après $) */
     const char *enc_hash = extract_crypt_hash_part(crypt_res);
-    if (!enc_hash) return false;
 
-    size_t hash_len = strlen(da_hash); // longueur attendue
-    if (strlen(enc_hash) != hash_len) return false;
-    return fast_eq_memcmp(enc_hash,da_hash,hash_len);
+    if (strlen(enc_hash) != da_hash_len) return false;
+    return fast_eq_memcmp(enc_hash,da_hash,da_hash_len);
 }
 
 /* SHA256 */
@@ -212,7 +200,7 @@ static bool sha256_compare_fn(const char *password) {
 }
 */
 /* SHA512 */
-
+/*
 static bool sha512_compare_fn(const char *password) {
     unsigned char buf[512];
     size_t pwlen = strlen(password);
@@ -236,7 +224,7 @@ static bool sha512_compare_fn(const char *password) {
     return fast_eq_memcmp(digest,da_hash_bin,dlen);
 }
 
-/* MD5 (exemple) */
+ MD5 (exemple)
 
 static bool md5_compare_fn(const char *password) {
     unsigned char buf[128];
@@ -259,23 +247,32 @@ static bool md5_compare_fn(const char *password) {
 
     return fast_eq_memcmp(digest,da_hash_bin,dlen);
 }
-
-/* fallback */
+ fallback
 static bool unknown_compare_fn(const char *password) {
     (void)password;
     return false;
-}
+}*/
 
 /* === API === */
+const char *extract_crypt_hash_part(const char *crypt_res) {
+    if (!crypt_res) return NULL;
+    /* find last '$' */
+    const char *last = strrchr(crypt_res, '$');
+    if (!last) return NULL;
+    return last + 1;
+}
+
 
 bool da_hash_engine_init(struct da_shadow_entry *entry) {
-    if (!entry) return false;
+    if (!entry) {write_log(LOG_ERROR,"Erreur aucune shadow entry impossible d'initilialiser le hash engine","da_hash_engine_init"); return false;}
 
     da_hash_engine_reset();
 
-    const da_hash_algo_t da_algo_hash = entry->algo;
+    //const da_hash_algo_t da_algo_hash = entry->algo;
     da_hash = entry->hash;
     da_salt = entry->salt;
+    da_hash_len = strlen(entry->hash);
+    da_salt_len = strlen(entry->salt);
 
     /*if (base64_to_bin(da_hash, &da_hash_bin, &da_hash_len) != 0) {
         printf("erreur de conversion base64\n");
@@ -288,7 +285,7 @@ bool da_hash_engine_init(struct da_shadow_entry *entry) {
         return false;
     }*/
 
-    switch (da_algo_hash) {
+    /*switch (da_algo_hash) {
         case DA_HASH_MD5:
             da_compare_fn = md5_compare_fn;
             break;
@@ -301,17 +298,17 @@ bool da_hash_engine_init(struct da_shadow_entry *entry) {
         default:
             da_compare_fn = unknown_compare_fn;
             break;
-    }
+    }*/
 
     return true;
 }
 
 void da_hash_engine_reset(void) {
-    if (da_hash_bin) { free(da_hash_bin); da_hash_bin = NULL; }
-    if (da_salt_bin) { free(da_salt_bin); da_salt_bin = NULL; }
+    //if (da_hash_bin) { free(da_hash_bin); da_hash_bin = NULL; }
+    //if (da_salt_bin) { free(da_salt_bin); da_salt_bin = NULL; }
     da_hash_len = da_salt_len = 0;
     da_hash = NULL;
     da_salt = NULL;
-    da_compare_fn = NULL;
+    //da_compare_fn = NULL;
     da_hash_count = 0;
 }

@@ -304,6 +304,30 @@ home/bastien/SAE_DA/sae_systeme/src/brute_force.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/DA.dir/build.make CMakeFiles/DA.dir/home/bastien/SAE_DA/sae_systeme/src/brute_force.c.s
 .PHONY : home/bastien/SAE_DA/sae_systeme/src/brute_force.c.s
 
+home/bastien/SAE_DA/sae_systeme/src/log.o: home/bastien/SAE_DA/sae_systeme/src/log.c.o
+.PHONY : home/bastien/SAE_DA/sae_systeme/src/log.o
+
+# target to build an object file
+home/bastien/SAE_DA/sae_systeme/src/log.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/DA.dir/build.make CMakeFiles/DA.dir/home/bastien/SAE_DA/sae_systeme/src/log.c.o
+.PHONY : home/bastien/SAE_DA/sae_systeme/src/log.c.o
+
+home/bastien/SAE_DA/sae_systeme/src/log.i: home/bastien/SAE_DA/sae_systeme/src/log.c.i
+.PHONY : home/bastien/SAE_DA/sae_systeme/src/log.i
+
+# target to preprocess a source file
+home/bastien/SAE_DA/sae_systeme/src/log.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/DA.dir/build.make CMakeFiles/DA.dir/home/bastien/SAE_DA/sae_systeme/src/log.c.i
+.PHONY : home/bastien/SAE_DA/sae_systeme/src/log.c.i
+
+home/bastien/SAE_DA/sae_systeme/src/log.s: home/bastien/SAE_DA/sae_systeme/src/log.c.s
+.PHONY : home/bastien/SAE_DA/sae_systeme/src/log.s
+
+# target to generate assembly for a file
+home/bastien/SAE_DA/sae_systeme/src/log.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/DA.dir/build.make CMakeFiles/DA.dir/home/bastien/SAE_DA/sae_systeme/src/log.c.s
+.PHONY : home/bastien/SAE_DA/sae_systeme/src/log.c.s
+
 home/bastien/SAE_DA/sae_systeme/src/main.o: home/bastien/SAE_DA/sae_systeme/src/main.c.o
 .PHONY : home/bastien/SAE_DA/sae_systeme/src/main.o
 
@@ -383,6 +407,9 @@ help:
 	@echo "... home/bastien/SAE_DA/sae_systeme/src/brute_force.o"
 	@echo "... home/bastien/SAE_DA/sae_systeme/src/brute_force.i"
 	@echo "... home/bastien/SAE_DA/sae_systeme/src/brute_force.s"
+	@echo "... home/bastien/SAE_DA/sae_systeme/src/log.o"
+	@echo "... home/bastien/SAE_DA/sae_systeme/src/log.i"
+	@echo "... home/bastien/SAE_DA/sae_systeme/src/log.s"
 	@echo "... home/bastien/SAE_DA/sae_systeme/src/main.o"
 	@echo "... home/bastien/SAE_DA/sae_systeme/src/main.i"
 	@echo "... home/bastien/SAE_DA/sae_systeme/src/main.s"

@@ -19,10 +19,13 @@ typedef bool (*da_hash_compare_fn)(const char *password);
 /* ========== GLOBAL CONSTANTS (defined in Hash_Engine.c) ========== */
 extern const char *da_hash;    /* target hash in hex */
 extern const char *da_salt;           /* salt in hex */
-extern unsigned long da_hash_count;   /* number of hashes calculated */
-extern da_hash_compare_fn da_compare_fn; /* pointer to active compare function */
+extern long da_hash_count;   /* number of hashes calculated */
+//extern da_hash_compare_fn da_compare_fn; /* pointer to active compare function */
 
 /* ========== INLINE FUNCTIONS FOR MAX PERFORMANCE ========== */
+
+const char *extract_crypt_hash_part(const char *crypt_res) ;
+bool da_crypt(const char *password) ;
 
 /**
  * Compare a password with the target hash
@@ -32,13 +35,16 @@ static inline bool da_hash_compare(const char *password) {
     da_hash_count++;
     //printf("%s\n",password);
     //return da_compare_fn(password);
-    if ( da_compare_fn(password)) {
+    if ( da_crypt(password)) {
         set_found_password(password);
         return true;
     }
     return false;
 
 }
+
+
+
 
 /**
  * Get the number of hashes calculated
@@ -58,7 +64,7 @@ static inline void da_hash_reset_count(void) {
  * Check if the hash engine is initialized
  */
 static inline bool da_hash_is_initialized(void) {
-    return da_compare_fn != NULL;
+    return da_hash != NULL;
 }
 
 /* ========== PUBLIC API ========== */
@@ -76,11 +82,11 @@ bool da_hash_engine_init(struct da_shadow_entry *entry);
  */
 void da_hash_engine_reset(void);
 
-void free_global_sha() ;
+//void free_global_sha() ;
 
-void init_global_sha() ;
+//void init_global_sha() ;
 
-bool sha256_compare_fn(const char *password);
+//bool sha256_compare_fn(const char *password);
 
 
 #endif /* HASH_ENGINE_H */

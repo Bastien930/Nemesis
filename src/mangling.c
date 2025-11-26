@@ -612,14 +612,14 @@ ManglingConfig* get_config_fast() {
 
 // === EXEMPLE D'UTILISATION ===
 
-void print_usage_example(int nb) {
+/*void print_usage_example(int nb) {
     //printf("=== MODULE DE MANGLING AVANCÉ ===\n\n");
 
     const char *test_word = "password";
 
 
     //printf("Mot de base: %s\n\n", test_word);
-    /*
+
     // Test config FAST
     //printf("--- CONFIG FAST (priorité haute uniquement) ---\n");
     ManglingConfig config_fast = get_config_fast();
@@ -637,7 +637,7 @@ void print_usage_example(int nb) {
     for (int i = 0; i < variations.count; i++) {
         printf("%3d. %s\n", i+1, variations.words[i]);
     }
-    */
+
     // Test config AGGRESSIVE
     //printf("\n--- CONFIG AGGRESSIVE (toutes priorités) ---\n");
     ManglingConfig* conf = get_config_fast();
@@ -652,7 +652,7 @@ void print_usage_example(int nb) {
     //for (int i = 0; i < variations.count; i++) {
       //  printf("%3d. %s\n", i+1, variations.words[i]);
     //}
-}
+}*/
 
 /*
 int main(int agrc,char *argv[]) {

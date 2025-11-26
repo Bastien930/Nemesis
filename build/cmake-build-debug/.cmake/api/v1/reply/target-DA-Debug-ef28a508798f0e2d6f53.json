@@ -32,13 +32,13 @@
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 30,
+				"line" : 32,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 31,
+				"line" : 33,
 				"parent" : 0
 			},
 			{
@@ -84,7 +84,8 @@
 				6,
 				9,
 				10,
-				11
+				11,
+				15
 			]
 		}
 	],
@@ -135,7 +136,8 @@
 				6,
 				9,
 				10,
-				11
+				11,
+				15
 			]
 		},
 		{
@@ -146,7 +148,8 @@
 				7,
 				8,
 				12,
-				13
+				13,
+				14
 			]
 		}
 	],
@@ -230,6 +233,17 @@
 			"backtrace" : 1,
 			"path" : "/home/bastien/SAE_DA/sae_systeme/Include/Mangling.h",
 			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "/home/bastien/SAE_DA/sae_systeme/Include/log.h",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "/home/bastien/SAE_DA/sae_systeme/src/log.c",
+			"sourceGroupIndex" : 0
 		}
 	],
 	"type" : "EXECUTABLE"
