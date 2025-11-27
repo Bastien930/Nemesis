@@ -619,7 +619,6 @@ ManglingConfig* get_config_fast() {
 
 
     //printf("Mot de base: %s\n\n", test_word);
-
     // Test config FAST
     //printf("--- CONFIG FAST (priorité haute uniquement) ---\n");
     ManglingConfig config_fast = get_config_fast();

@@ -34,12 +34,12 @@ target_link_libraries(DA crypt) #temporaire
 
 # Optimisations
 # Debug : pas d'optimisations agressives, ajouter -g et garder frame pointers
-#set(CMAKE_C_FLAGS_DEBUG "-g -O0 -fno-omit-frame-pointer -Wall -Wextra")
-#set(CMAKE_EXE_LINKER_FLAGS_DEBUG "")
+set(CMAKE_C_FLAGS_DEBUG "-g -O0 -fno-omit-frame-pointer -Wall -Wextra")
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "")
 
 # Release : tu peux garder ton tuning, séparé du debug
-set(CMAKE_C_FLAGS_RELEASE "-O3 -fno-omit-frame-pointer -march=native -funroll-loops")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "")
+#set(CMAKE_C_FLAGS_RELEASE "-O3 -fno-omit-frame-pointer -march=native -funroll-loops")
+#set(CMAKE_EXE_LINKER_FLAGS_RELEASE "")
 
 
 

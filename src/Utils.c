@@ -19,6 +19,8 @@
 
 #include <string.h>
 
+long da_iteration = 1;
+
 /* définition des variables globales */
 atomic_int g_password_found = 0;
 
@@ -59,6 +61,10 @@ void print_slow(const char *text, useconds_t delay_us) {
         fflush(stdout);
         usleep(delay_us);
     }
+}
+
+long count_iteration(int iteration) {
+    ;
 }
 
 void print_banner(void) {

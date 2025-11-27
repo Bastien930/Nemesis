@@ -50,10 +50,11 @@ int main(int argc, char* argv[]){
     e->username = strdup("user");
     e->hash     = strdup(hashed); // $5 sha 256
     e->salt     = strdup("$y$j9T$abcd1234$");
+    //e->salt     = strdup("$5$12345");
     e->algo     = DA_HASH_SHA256;
     printf("%s\n%s\n%s\n",e->username,e->hash,e->salt);
     if (!da_hash_engine_init(e)) perror("engine init");
-    generate_mangled_words("password",get_config_aggressive());
+    generate_mangled_words("password hello alexis le jarjaval",get_config_fast());
     free(e->username);
     free(e->hash);
     free(e->salt);

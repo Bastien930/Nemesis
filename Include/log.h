@@ -22,14 +22,14 @@ typedef struct {
     int log_level;
 } LogConfig;
 
-static LogConfig* log_config;
+extern LogConfig* da_log_config;
 
 
-static void write_log(LogLevel level, const char *message,const char *location) ;
+void write_log(LogLevel level, const char *message,const char *location) ;
 
-static int init_log(const char *filename, int level) ;
+int init_log(const char *filename, int level) ;
 
-static void close_log(void) ;
+void close_log(void) ;
 
 
 /*
