@@ -6,5 +6,5 @@ C_DEFINES =
 
 C_INCLUDES = -I/home/bastien/SAE_DA/sae_systeme/build/../Include
 
-C_FLAGS = -g -O0 -fno-omit-frame-pointer -Wall -Wextra -std=gnu2x -fdiagnostics-color=always
+C_FLAGS = -g -std=gnu2x -fdiagnostics-color=always -fopenmp
 

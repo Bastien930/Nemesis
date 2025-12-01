@@ -17,6 +17,9 @@
 #include "../Include/log.h"
 #include <unistd.h>
 #include <crypt.h>
+#include <omp.h>
+
+#include "brute_force.h"
 
 #define RED(string) "\x1b[31m" string "\x1b[0m"
 
@@ -26,13 +29,18 @@ int main(int argc, char* argv[]){
 
     char errbuff[DA_ERRLEN];
 
-    //print_banner();
+    print_banner();
     //sleep(10);
+    init_time();
     da_config_init_default(&da_config);
 
 
 
 
+
+    if (parse_args(argc, argv, &da_config) == 2) {
+        return 0;
+    }
 
     if (parse_args(argc, argv, &da_config) != 0) {
         return EXIT_FAILURE;
@@ -44,26 +52,32 @@ int main(int argc, char* argv[]){
 
     // ===== temporaire ====== //
     const char *password = "Password123";
-    char *hashed = "uPC3x7H6BVL5jdWZGWSqAZuS7F2f2qNXwtLqocfjC50"; // commande pour hash openssl passwd -5 -salt abcd1234 Password123
+    char *hashed = "zJq7O87dzcdJ0wonNAzYlD1YxJJ.suzRv3QJAhmllSmnClaRM085JqTuawh.Y9ePO2o5gafSJJBQBRst0SVd11"; // commande pour hash openssl passwd -6 -salt abcd1234 '$y(4'
+    //char *hashed = "uPC3x7H6BVL5jdWZGWSqAZuS7F2f2qNXwtLqocfjC50"; // commande pour hash openssl passwd -5 -salt abcd1234 Password123
     if (!init_log("../log.txt",LOG_DEBUG)) perror("log init");
     struct da_shadow_entry *e = malloc(sizeof(*e));
     e->username = strdup("user");
     e->hash     = strdup(hashed); // $5 sha 256
-    e->salt     = strdup("$y$j9T$abcd1234$");
-    //e->salt     = strdup("$5$12345");
-    e->algo     = DA_HASH_SHA256;
+    //e->salt     = strdup("$y$j9T$abcd1234$");
+    e->salt     = strdup("$6$abcd1234$");
+    e->algo     = DA_HASH_SHA512;
     printf("%s\n%s\n%s\n",e->username,e->hash,e->salt);
     if (!da_hash_engine_init(e)) perror("engine init");
-    generate_mangled_words("password hello alexis le jarjaval",get_config_fast());
+
+    omp_set_num_threads(16);
+
+    bruteforce();
+    //#pragma omp parallel for schedule(dynamic) // pbar de progression
+    //for (int i=0;i<100;i++) {
+    //    generate_mangled_words("hello la team",get_config_fast());
+    //}
+
     free(e->username);
     free(e->hash);
     free(e->salt);
     free(e);
 
-    char buff[MAX_WORD_LEN];
-    get_found_password(buff,MAX_WORD_LEN);
-    printf("le password trouve est : %s\n",buff);
-    printf("Variations: %lu\n", da_hash_get_count());
+    show_result();
 
 
     /*

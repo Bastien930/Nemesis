@@ -21,7 +21,7 @@ void da_init_shadow_entry_list(struct da_shadow_entry_list *list) {
 */
 int da_load_shadow_file(const char* path,struct da_shadow_entry_list *list)
 {
-    ;
+    ;//renvoie le nombre de ligne pouvant être traiter.
 }
 
 /*

@@ -2,7 +2,10 @@
 // Created by bastien on 10/24/25.
 //
 
-#include "../Include/brute_force.h"
+#include "brute_force.h"
+#include "Config.h"
+#include "Utils.h"
+#include "log.h"
 
 
 #include <stdio.h>
@@ -11,71 +14,113 @@
 #include <string.h>
 #include "../Include/brute_force.h"
 
-void attaque_bruteforce(char* machaine,int sizemax){
-    int boucle=1;
-    int sauvegarde=0;
-    int i=0;
-    int pointage=0;
-    char caracteres[127 - 32 + 1];  // 95 caracteres + '\0'
-    /*for (int i = 32; i <= 126; i++) {
-        caracteres[i - 32] = (char)i;
-    }
-    caracteres[126 - 32 + 1] = '\0'; // terminaison*/
-    for (int i = 97; i <= 100; i++) {
-        caracteres[i - 97] = (char)i;
-    }
-    caracteres[100 - 97 + 1] = '\0';
-    printf("%s\n", caracteres);
-    printf("\n\n----------------------\n\n");
-    while(boucle <= sizemax){
-        if(boucle-1 == pointage){
-            if(caracteres[i] != '\0'){ //Si on n'a pas fini tous les caracteres
-                machaine[pointage] = caracteres[i]; //On met le caractere suivant
-                i++; //On prendra le prochain caractere
+#include "Hash_Engine.h"
+
+void bruteforce(void) {
+
+    char caracteres[256];
+
+    int len = build_charset(caracteres, sizeof(caracteres),
+                            da_config.attack.charset_preset,
+                            da_config.attack.charset_custom);
+
+    if (len < 0) { write_log(LOG_ERROR,"Erreur lors de l'initialisation du charset","brutforce");return;    }
+
+    const int b = len;
+    const int length = DA_MAX_LEN;
+    const long long total = puissance(len,DA_MAX_LEN);
+
+    #pragma omp parallel
+    {
+        char word[DA_MAX_LEN+1];
+        word[length] = '\0';
+
+    #pragma omp for schedule(static)
+        for (long long n = 0; n < total; n++) {
+
+            if (is_password_found()) continue;
+
+            int current_length = 1;
+            long long range = b;
+            long long local_index = n;
+
+            while (local_index >= range && current_length < length) {
+                local_index -= range;
+                current_length++;
+                range *= b;
             }
-            else{ //si on a fini tous les caracteres
-                if(pointage != 0){ //on regarde si le pointage est le dernier   faire
-                    machaine[pointage] = caracteres[0];
-                    pointage--;
-                    if(pointage<=boucle-1){
-                        char *ptr = strchr(caracteres, machaine[pointage]); //a continuer (bug)
-                        sauvegarde = ptr - caracteres;
-                    }
-                }
-                else{
-                    machaine[pointage] = caracteres[0];
-                    pointage = pointage+boucle; //si c' tait le dernier, on le d fini au prochain nouveau caractere
-                    boucle++;
-                }
-                i=0;
+
+            // ÉTAPE 2 : Générer le mot de cette longueur
+            word[current_length] = '\0';
+
+            long long x = local_index;
+            for (int i = current_length - 1; i >= 0; i--) {
+                int r = x % b;
+                x = x / b;
+                word[i] = caracteres[r];
             }
-            printf("%s\n", machaine);
+            da_hash_compare(word,NULL);
+            if (n==5100000) printf("%d : %s\n",n,word);
+
+            long long count = da_hash_get_count();
+            if (count%10000==0) {
+            #pragma omp critical
+              {
+                  print_progress_bar(count,total,word,false);
+               }
+             }
         }
-        else{
-            /*if(pointage==0){
-                pointage = boucle;
-                boucle++;
-                sauvegarde = 0;
-            }
-            else{*/
-            if(caracteres[sauvegarde+1]=='\0'){
-                sauvegarde = 0;
-                machaine[pointage] = caracteres[sauvegarde];
-                pointage = boucle;
-                boucle++;
-            }
-            else{
-                machaine[pointage] = caracteres[sauvegarde+1];
-                pointage = strlen(machaine)-1;
-            }
-        }
+
     }
+    print_progress_bar(total,total,"",true);
+    printf("total : %llu\n",total);
 }
 
-void init_bruteforce(){
-    char unechaine[3];
-    attaque_bruteforce(unechaine,3);
+
+int build_charset(char *out, size_t out_size,
+                  da_charset_preset_t preset,
+                  const char *custom_charset)
+{
+    size_t pos = 0;
+
+    switch (preset) {
+
+        case DA_CHARSET_PRESET_DEFAULT:
+            // ASCII imprimable (32 à 126)
+            for (int c = 32; c <= 126; c++) {
+                if (pos + 1 >= out_size) return -1;
+                out[pos++] = (char)c;
+            }
+            break;
+
+        case DA_CHARSET_PRESET_ALPHANUM:
+            // A-Z
+            for (char c = 'A'; c <= 'Z'; c++) out[pos++] = c;
+            // a-z
+            for (char c = 'a'; c <= 'z'; c++) out[pos++] = c;
+            // 0-9
+            for (char c = '0'; c <= '9'; c++) out[pos++] = c;
+            break;
+
+        case DA_CHARSET_PRESET_NUMERIC:
+            for (char c = '0'; c <= '9'; c++) out[pos++] = c;
+            break;
+
+        case DA_CHARSET_PRESET_CUSTOM:
+            if (!custom_charset) return -2;
+            pos = strlen(custom_charset);
+            if (pos + 1 >= out_size) return -3;
+            memcpy(out, custom_charset, pos);
+            break;
+
+        default:
+            return -4;
+    }
+
+    out[pos] = '\0';  // terminaison string C
+    return pos;       // retourne la taille
 }
+
 
 
 

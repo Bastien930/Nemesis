@@ -10,6 +10,8 @@
 #include <stdatomic.h>
 #include <pthread.h>
 #include <stdbool.h>
+#include "Hash_Engine.h"
+#include <omp.h>
 
 #include <stdio.h>
 #include <unistd.h> // pour usleep()
@@ -21,11 +23,38 @@
 
 long da_iteration = 1;
 
+clock_t start;
+double start_omp;
 /* définition des variables globales */
 atomic_int g_password_found = 0;
 
 char g_found_password[MAX_WORD_LEN] = {0};
 pthread_mutex_t g_found_password_lock = PTHREAD_MUTEX_INITIALIZER;
+
+void init_time(void) {
+    start = clock();
+    start_omp = omp_get_wtime();
+
+}
+
+void print_progress_bar(long long current, long long total, const char *word,bool is_slow) {
+    const int bar_width = 80;
+    float progress = (float)current / total;
+    int filled = (int)(progress * bar_width);
+
+    printf("\r[");
+    for (int i = 0; i < bar_width; i++) {
+        if (is_slow) usleep(30000);
+        if (i < filled) printf("=");
+        else if (i == filled) printf(">");
+        else printf(" ");
+        fflush(stdout);
+    }
+    printf("] %.1f%% (%lld/%lld) | %s",
+           progress * 100, current, total, word);
+    fflush(stdout);
+    if (is_slow) sleep(2);
+}
 
 void set_found_password(const char *pw) {
     if (!pw) return;
@@ -66,6 +95,49 @@ void print_slow(const char *text, useconds_t delay_us) {
 long count_iteration(int iteration) {
     ;
 }
+
+void show_result(void) {
+    char buff[MAX_WORD_LEN];
+    get_found_password(buff,MAX_WORD_LEN);
+    double temp_omp = omp_get_wtime() - start_omp;
+    double temp_cpu = ((double)(clock() - start)) / CLOCKS_PER_SEC;
+
+
+    if (strlen(buff)==0) printf("aucune correspondance a été trouvé...\n");
+    else printf("le password trouve est : %s\n",buff);
+    printf("%lu mots de passe testé en : %.2f secondes\n", da_hash_get_count(),temp_omp);
+    printf("Temps réel écoulé : %.2f secondes\n", temp_omp);
+    printf("Temps CPU cumulé : %.2f secondes\n", temp_cpu);
+    printf("Débit réel : %.2f mots de passe/seconde\n", da_hash_get_count() / temp_omp);
+    printf("Ratio CPU/Temps réel : %.2fx\n\n", temp_cpu / temp_omp);
+
+}
+
+bool safe_concat(char *dest, size_t dest_size, const char *s1, const char *s2) {
+    if (!dest || !s1 || !s2) return false;
+
+    size_t len1 = strlen(s1);
+    size_t len2 = strlen(s2);
+
+    if (len1 + len2 + 1 > dest_size) {
+        return false; // Trop long
+    }
+
+    memcpy(dest, s1, len1);
+    memcpy(dest + len1, s2, len2);
+    dest[len1 + len2] = '\0';
+
+    return true;
+}
+
+long long puissance(int base, int exp) {
+    long long res = 1;
+    for (int i = 0; i < exp; i++) {
+        res *= base;
+    }
+    return res;
+}
+
 
 void print_banner(void) {
     printf("\n");

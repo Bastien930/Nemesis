@@ -27,19 +27,26 @@ add_executable(DA
         ../Include/Mangling.h
         ../Include/log.h
         ../src/log.c
+        ../src/hashSet.c
+        ../Include/hashSet.h
 )
 
 target_link_libraries(DA crypto) #pour open/ssl
 target_link_libraries(DA crypt) #temporaire
+find_package(OpenMP REQUIRED)
+
+if(OpenMP_C_FOUND)
+    target_link_libraries(DA OpenMP::OpenMP_C)
+endif()
 
 # Optimisations
 # Debug : pas d'optimisations agressives, ajouter -g et garder frame pointers
-set(CMAKE_C_FLAGS_DEBUG "-g -O0 -fno-omit-frame-pointer -Wall -Wextra")
-set(CMAKE_EXE_LINKER_FLAGS_DEBUG "")
+#set(CMAKE_C_FLAGS_DEBUG "-g -O0 -fno-omit-frame-pointer -Wall -Wextra -fopenmp")
+#set(CMAKE_EXE_LINKER_FLAGS_DEBUG "")
 
 # Release : tu peux garder ton tuning, séparé du debug
-#set(CMAKE_C_FLAGS_RELEASE "-O3 -fno-omit-frame-pointer -march=native -funroll-loops")
-#set(CMAKE_EXE_LINKER_FLAGS_RELEASE "")
+set(CMAKE_C_FLAGS_RELEASE "-O3 -fno-omit-frame-pointer -march=native -funroll-loops -fopenmp")
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "")
 
 
 

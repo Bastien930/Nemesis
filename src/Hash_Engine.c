@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <omp.h>
 
 #include "log.h"
 
@@ -144,8 +145,10 @@ static int evp_hash(const EVP_MD *md,
 /* === Fonctions de hash concrètes (une par algo) === */
 
 bool da_crypt(const char *password) {
-    char *crypt_res = crypt(password, da_salt);
-    if (!crypt_res) {write_log(LOG_WARNING,strcat("Erreur lors de crypt pour le mot de passe : ",password),"da_crypt"); return false;}
+    struct crypt_data data;
+    data.initialized = 0;
+    char *crypt_res = crypt_r(password, da_salt,&data);
+    if (!crypt_res) {char buffer[512];safe_concat(buffer,512,"Erreur lors de crypt pour le mot de passe : ",password);write_log(LOG_WARNING,buffer,"da_crypt"); return false;}
     /* 2) extraire la partie hash encodée (dernier champ après $) */
     const char *enc_hash = extract_crypt_hash_part(crypt_res);
 

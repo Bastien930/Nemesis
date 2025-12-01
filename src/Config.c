@@ -101,8 +101,8 @@ int da_config_validate(const struct da_config_t *cfg, char *errbuf, size_t errle
     }
 
     /* min/max length checks */
-    if (cfg->attack.min_len < DA_MIN_ALLOWED_LEN || cfg->attack.max_len < DA_MIN_ALLOWED_LEN) {
-        if (errbuf && errlen) snprintf(errbuf, errlen, "min/max must be >= %d", DA_MIN_ALLOWED_LEN);
+    if (cfg->attack.min_len < DA_MIN_LEN || cfg->attack.max_len < DA_MIN_LEN) {
+        if (errbuf && errlen) snprintf(errbuf, errlen, "min/max must be >= %d", DA_MIN_LEN);
         return -5;
     }
     if (cfg->attack.min_len > cfg->attack.max_len) {
@@ -110,10 +110,10 @@ int da_config_validate(const struct da_config_t *cfg, char *errbuf, size_t errle
                                         cfg->attack.min_len, cfg->attack.max_len);
         return -5;
     }
-    if (cfg->attack.max_len > DA_MAX_ALLOWED_LEN) {
+    if (cfg->attack.max_len > DA_MAX_LEN) {
         if (errbuf && errlen) snprintf(errbuf, errlen,
                                         "max_len (%d) too large (limit %d)",
-                                        cfg->attack.max_len, DA_MAX_ALLOWED_LEN);
+                                        cfg->attack.max_len, DA_MAX_LEN);
         return -5;
     }
 
@@ -169,8 +169,8 @@ void da_print_usage(const char *progname) {
     puts("  -b, --bruteforce           Activer le mode bruteforce (optionnel).");
     puts("  -c, --charset <preset|chars> Charset prédéfini ou liste explicite de caractères.");
     puts("                             presets: default, alphanum, numeric, allprint");
-    puts("      --min <n>              Longueur minimale pour génération (défaut : " STR(DA_MIN_LEN) ").");
-    puts("      --max <n>              Longueur maximale pour génération (défaut : " STR(DA_MAX_LEN) ").");
+    puts("      --min <n>              Longueur minimale pour génération brutforce (défaut : " STR(DA_MIN_LEN) ").");
+    puts("      --max <n>              Longueur maximale pour génération brutforce (défaut : " STR(DA_MAX_LEN) ").");
     puts("  -t, --threads <n>          Nombre de threads (défaut : 1).");
     puts("  -o, --output <file>        Fichier de sortie (JSON/CSV/TXT selon extension).");
     puts("      --format <json|csv|txt> Forcer le format de sortie (TXT si omis).");
@@ -183,7 +183,7 @@ void da_print_usage(const char *progname) {
     printf("Limites / valeurs par défaut compilées :\n");
     printf("  DA_MAX_PATH = %d, DA_MAX_THREADS = %d, DA_MIN_LEN = %d, DA_MAX_LEN = %d\n",
            DA_MAX_PATH, DA_MAX_THREADS, DA_MIN_LEN, DA_MAX_LEN);
-    printf("  DA_MAX_ALLOWED_LEN = %d, DA_MAX_ATTEMPTS = %d\n", DA_MAX_ALLOWED_LEN, DA_MAX_ATTEMPTS);
+    printf("  DA_MAX_ALLOWED_LEN = %d, DA_MAX_ATTEMPTS = %d\n", DA_MAX_LEN, DA_MAX_ATTEMPTS);
     puts("");
 
     puts("Exemples :");

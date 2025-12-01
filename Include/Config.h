@@ -12,11 +12,11 @@
 #define DA_MAX_PATH 4096
 #define DA_MAX_THREADS 1024
 #define DA_MIN_LEN 1
-#define DA_MAX_LEN 7
+#define DA_MAX_LEN 4
 #define DA_MAX_ATTEMPTS 10000000
 
-#define DA_MAX_ALLOWED_LEN 64
-#define DA_MIN_ALLOWED_LEN 1
+//#define DA_MAX_ALLOWED_LEN 64
+//#define DA_MIN_ALLOWED_LEN 1
 
 #define DA_VERSION "0.1"
 #define DA_BUILD_DATE __DATE__ " " __TIME__

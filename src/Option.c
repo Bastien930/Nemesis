@@ -75,7 +75,7 @@ int parse_args(int argc, char *argv[], struct da_config_t *cfg) {
 
         case 'h': {
             da_print_usage(argv[0]);
-            break;
+            return 2;
         }
 
         case OPT_MIN: {
