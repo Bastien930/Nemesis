@@ -25,11 +25,13 @@
 
 struct da_config_t da_config = {0};
 
+static void run_attack(void);
+
 int main(int argc, char* argv[]){
 
     char errbuff[DA_ERRLEN];
 
-    print_banner();
+    //print_banner();
     //sleep(10);
     init_time();
     da_config_init_default(&da_config);
@@ -45,16 +47,34 @@ int main(int argc, char* argv[]){
     if (parse_args(argc, argv, &da_config) != 0) {
         return EXIT_FAILURE;
     }
-    //if (da_config_validate(&da_config,errbuff,DA_ERRLEN) != 0) {
-    //    puts(errbuff);
-    //    return EXIT_FAILURE;
-    //}
+    if (da_config_validate(&da_config,errbuff,DA_ERRLEN) != 0) {
+        puts(errbuff);
+        return EXIT_FAILURE;
+    }
+
+    run_attack();
+
+
+    return 0;
+}
+
+static void run_attack(void) {
+    // boucler sur le nombre de shadow entry.
+
+    // faire une fnct si brutforce et mangling alors lancer bruteforce mangling
+    // si dictionnaire et mangling
+    // si dictionnaire
+    // si brutforce.
+    // si mangling echec.
+
 
     // ===== temporaire ====== //
     const char *password = "Password123";
     char *hashed = "zJq7O87dzcdJ0wonNAzYlD1YxJJ.suzRv3QJAhmllSmnClaRM085JqTuawh.Y9ePO2o5gafSJJBQBRst0SVd11"; // commande pour hash openssl passwd -6 -salt abcd1234 '$y(4'
     //char *hashed = "uPC3x7H6BVL5jdWZGWSqAZuS7F2f2qNXwtLqocfjC50"; // commande pour hash openssl passwd -5 -salt abcd1234 Password123
-    if (!init_log("../log.txt",LOG_DEBUG)) perror("log init");
+
+    if (da_config.output.enable_logging) {if (!init_log(da_config.output.log_file,LOG_DEBUG)) perror("log init");}
+
     struct da_shadow_entry *e = malloc(sizeof(*e));
     e->username = strdup("user");
     e->hash     = strdup(hashed); // $5 sha 256
@@ -62,11 +82,19 @@ int main(int argc, char* argv[]){
     e->salt     = strdup("$6$abcd1234$");
     e->algo     = DA_HASH_SHA512;
     printf("%s\n%s\n%s\n",e->username,e->hash,e->salt);
-    if (!da_hash_engine_init(e)) perror("engine init");
 
-    omp_set_num_threads(16);
 
-    bruteforce();
+    if (!da_hash_engine_init(e)) {write_log(LOG_ERROR,"erreur lors de l'initialisation du moteur de hash.","run_attack");perror("engine init");}
+    omp_set_num_threads(da_config.system.threads); // par defaut 16.
+
+
+
+    if (da_config.attack.enable_dictionary && !da_config.attack.enable_bruteforce){;}
+
+    if (da_config.attack.enable_bruteforce && !da_config.attack.enable_dictionary) {
+        if (da_config.attack.enable_mangling) da_bruteforce_mangling(da_getConfigMangling(da_config.attack.mangling_config));
+        else da_bruteforce();
+    }
     //#pragma omp parallel for schedule(dynamic) // pbar de progression
     //for (int i=0;i<100;i++) {
     //    generate_mangled_words("hello la team",get_config_fast());
@@ -78,39 +106,9 @@ int main(int argc, char* argv[]){
     free(e);
 
     show_result();
-
-
-    /*
-    int opt;
-    static struct option long_options[] = {
-        {"bruteforce", no_argument, 0, 'b'}, //bruteforce "naif"
-        {"mangling", required_argument, 0, 'm'}, //le mangling obligatoirement : un argument qui est un entier (pour le nombre de fois...) A DEFINIR
-        {"help", no_argument, 0, 'h'}, //le help : juste de l'aide
-        {0, 0, 0, 0}
-    };
-
-    while ((opt = getopt_long(argc, argv, "bm:h", long_options, NULL)) != -1) {
-        switch(opt) {
-        case 'b':
-            printf("Generation du bruteforce dans 3sec...\n");
-            sleep(3);
-            init_bruteforce();
-            break;
-        case 'm':
-            printf("Le mangling va commencer pour %s iterations de caracteres dans 3sec...\n", optarg); //optarg est une variable globale : si on met un chiffre ("3"), il va le stocker : important pour la suite
-            sleep(3);
-            break;
-        case 'h':
-            printf("Pour utiliser : ./programme [--bruteforce] OU [--mangling CHIFFRE] OU [--help]\n");
-            exit(0);
-        default:
-            fprintf(stderr, RED("L'option n'est pas connue !\n"));
-            exit(1);
-        }
-    }
-    */
-    return 0;
+    // rajouter le faite de print dans la sortie en fnct du type de sortie
 }
+
 /*int main(int argc, char **argv) {
     const char *pwd = (argc > 1) ? argv[1] : "motdepasse_test";
 

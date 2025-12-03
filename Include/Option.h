@@ -27,7 +27,7 @@ static struct option long_options[] = {
     /* name           has_arg          flag  val */
     {"shadow",        required_argument, 0, 's'},          /* -s, --shadow <file> */
     {"wordlist",      required_argument, 0, 'w'},          /* -w, --wordlist <file> */
-    {"mangling",      required_argument, 0, 'm'},          /* -m, --mangling <rules> */
+    {"mangling",      optional_argument, 0, 'm'},          /* -m, --mangling <rules> */
     {"dictionary",    no_argument,       0, 'd'},          /* -d, --dictionary */
     {"bruteforce",    no_argument,       0, 'b'},          /* -b, --bruteforce */
     {"charset",       required_argument, 0, 'c'},          /* -c, --charset <preset|chars> */

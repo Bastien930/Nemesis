@@ -152,7 +152,7 @@ bool da_crypt(const char *password) {
     /* 2) extraire la partie hash encodée (dernier champ après $) */
     const char *enc_hash = extract_crypt_hash_part(crypt_res);
 
-    if (strlen(enc_hash) != da_hash_len) return false;
+    //if (strlen(enc_hash) != da_hash_len) return false;
     return fast_eq_memcmp(enc_hash,da_hash,da_hash_len);
 }
 

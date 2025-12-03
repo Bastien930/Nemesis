@@ -9,16 +9,21 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "Mangling.h"
+
 #define DA_MAX_PATH 4096
 #define DA_MAX_THREADS 1024
 #define DA_MIN_LEN 1
 #define DA_MAX_LEN 4
 #define DA_MAX_ATTEMPTS 10000000
+#define DA_MANGLING_FAST 222
+#define DA_MANGLING_BALANCED 606
+#define DA_MANGLING_AGGRESSIVE 890
 
 //#define DA_MAX_ALLOWED_LEN 64
 //#define DA_MIN_ALLOWED_LEN 1
 
-#define DA_VERSION "0.1"
+#define DA_VERSION "0.3"
 #define DA_BUILD_DATE __DATE__ " " __TIME__
 #define DA_AUTHOR "BASTIEN-ALEXIS-ILIAN"
 #define DA_ERRLEN 2048
@@ -51,7 +56,7 @@ struct da_attack {
     bool enable_dictionary;
     bool enable_bruteforce;
     bool enable_mangling;
-    char mangling_rules[512];
+    int mangling_config;
     da_charset_preset_t charset_preset;
     char charset_custom[256];
     int min_len;
@@ -70,7 +75,6 @@ struct da_output {
 
 struct da_system {
     unsigned int threads;
-    unsigned int max_threads;
     bool enable_gpu;
 };
 

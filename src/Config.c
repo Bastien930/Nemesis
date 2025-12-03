@@ -22,20 +22,19 @@ void da_config_init_default(struct da_config_t *cfg){
     cfg->attack.enable_dictionary = false;
     cfg->attack.enable_bruteforce = true;
     cfg->attack.enable_mangling = false;
-    cfg->attack.mangling_rules[0] = '\0';
+    cfg->attack.mangling_config = DA_MANGLING_FAST;
     cfg->attack.charset_preset = DA_CHARSET_PRESET_DEFAULT;
     cfg->attack.charset_custom[0] = '\0';
     cfg->attack.min_len = DA_MIN_LEN ;
     cfg->attack.max_len = DA_MAX_LEN ;
     cfg->attack.max_attempts = DA_MAX_ATTEMPTS ;
 
-    cfg->output.output_file[0] = '\0';
+    strcpy(cfg->output.output_file, "output.txt");
     cfg->output.format = DA_OUT_TXT ;
-    cfg->output.enable_logging = false ;
-    cfg->output.log_file[0] = '\0';
+    cfg->output.enable_logging = true ;
+    strcpy(cfg->output.log_file, "log.da");
 
-    cfg->system.threads = 1 ;
-    cfg->system.max_threads = DA_MAX_THREADS ;
+    cfg->system.threads = 16 ;
     cfg->system.enable_gpu = false ;
 
     cfg->meta.version = DA_VERSION ;
@@ -83,6 +82,10 @@ int da_config_validate(const struct da_config_t *cfg, char *errbuf, size_t errle
         if (errbuf && errlen) snprintf(errbuf, errlen, "no attack mode enabled (dictionary or bruteforce)");
         return -3;
     }
+    if (cfg->attack.enable_dictionary && cfg->attack.enable_bruteforce) {
+        if (errbuf && errlen) snprintf(errbuf, errlen, "2 icomptible mode enabled (dictionary and bruteforce)");
+        return -3;
+    }
 
     /* si dictionnaire activé, wordlist requis (sauf si bruteforce seul) */
     if (cfg->attack.enable_dictionary) {
@@ -128,11 +131,6 @@ int da_config_validate(const struct da_config_t *cfg, char *errbuf, size_t errle
         if (errbuf && errlen) snprintf(errbuf, errlen, "threads must be >= 1");
         return -6;
     }
-    if (cfg->system.threads > cfg->system.max_threads) {
-        if (errbuf && errlen) snprintf(errbuf, errlen, "threads (%u) exceeds max_threads (%u)",
-                                        cfg->system.threads, cfg->system.max_threads);
-        return -6;
-    }
     if (cfg->system.threads > DA_MAX_THREADS) {
         if (errbuf && errlen) snprintf(errbuf, errlen, "threads (%u) exceeds compile-time limit (%d)",
                                         cfg->system.threads, DA_MAX_THREADS);
@@ -164,7 +162,7 @@ void da_print_usage(const char *progname) {
     puts("  -s, --shadow <file>        Fichier shadow (obligatoire).");
     puts("                             Utilisez '-' pour lire depuis stdin.");
     puts("  -w, --wordlist <file>      Fichier wordlist (pour attaque par dictionnaire).");
-    puts("  -m, --mangling <rules>     Règles de mangling à appliquer sur la wordlist (chaine).");
+    puts("  -m, --mangling <config>    Config vaut fast, balanced, agressive (défaut : fast).");
     puts("  -d, --dictionary           Activer le mode dictionnaire (par défaut).");
     puts("  -b, --bruteforce           Activer le mode bruteforce (optionnel).");
     puts("  -c, --charset <preset|chars> Charset prédéfini ou liste explicite de caractères.");

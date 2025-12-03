@@ -15,8 +15,9 @@
 #include "../Include/brute_force.h"
 
 #include "Hash_Engine.h"
+#include "Mangling.h"
 
-void bruteforce(void) {
+void da_bruteforce(void) {
 
     char caracteres[256];
 
@@ -60,7 +61,7 @@ void bruteforce(void) {
                 word[i] = caracteres[r];
             }
             da_hash_compare(word,NULL);
-            if (n==5100000) printf("%d : %s\n",n,word);
+            //if (n==5100000) printf("%d : %s\n",n,word);
 
             long long count = da_hash_get_count();
             if (count%10000==0) {
@@ -70,9 +71,67 @@ void bruteforce(void) {
                }
              }
         }
-
+    print_progress_bar(total,total,word,true);
     }
-    print_progress_bar(total,total,"",true);
+    printf("total : %llu\n",total);
+}
+
+void da_bruteforce_mangling(ManglingConfig *config) {
+
+    char caracteres[256];
+
+    int len = build_charset(caracteres, sizeof(caracteres),
+                            da_config.attack.charset_preset,
+                            da_config.attack.charset_custom);
+
+    if (len < 0) { write_log(LOG_ERROR,"Erreur lors de l'initialisation du charset","brutforce");return;    }
+
+    const int b = len;
+    const int length = DA_MAX_LEN;
+    const long long total = puissance(len,DA_MAX_LEN);
+
+    #pragma omp parallel
+    {
+        char word[DA_MAX_LEN+1];
+        word[length] = '\0';
+
+        #pragma omp for schedule(static)
+        for (long long n = 0; n < total; n++) {
+
+            if (is_password_found()) continue;
+
+            int current_length = 1;
+            long long range = b;
+            long long local_index = n;
+
+            while (local_index >= range && current_length < length) {
+                local_index -= range;
+                current_length++;
+                range *= b;
+            }
+
+            // ÉTAPE 2 : Générer le mot de cette longueur
+            word[current_length] = '\0';
+
+            long long x = local_index;
+            for (int i = current_length - 1; i >= 0; i--) {
+                int r = x % b;
+                x = x / b;
+                word[i] = caracteres[r];
+            }
+            generate_mangled_words(word,config);// le mangling verifie le mot de base...
+            //if (n==5100000) printf("%d : %s\n",n,word);
+
+            long long count = da_hash_get_count();
+            if (count%10000==0) {
+                #pragma omp critical
+                {
+                    print_progress_bar(count,total,word,false);
+                }
+            }
+        }
+        print_progress_bar(total,total,word,true);
+    }
     printf("total : %llu\n",total);
 }
 

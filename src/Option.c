@@ -32,8 +32,12 @@ int parse_args(int argc, char *argv[], struct da_config_t *cfg) {
 
         case 'm': {
             cfg->attack.enable_mangling = true;
-            strncpy(cfg->attack.mangling_rules, optarg, sizeof(cfg->attack.mangling_rules) - 1);
-            cfg->attack.mangling_rules[sizeof(cfg->attack.mangling_rules)-1] = '\0';
+            if (optarg && strcmp(optarg, "balanced") == 0) {
+                cfg->attack.mangling_config = DA_MANGLING_BALANCED;
+            } else if (optarg && strcmp(optarg, "alphanum") == 0) {
+                cfg->attack.mangling_config = DA_MANGLING_AGGRESSIVE;
+                // sinon deja Fast par defaut.
+            }
             break;
         }
 

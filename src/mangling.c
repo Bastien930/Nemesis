@@ -5,6 +5,8 @@
 #include <ctype.h>
 #include <crypt.h>
 #include <openssl/evp.h>
+
+#include "Config.h"
 #include "Hash_Engine.h"
 #include "Mangling.h"
 #include "Utils.h"
@@ -614,6 +616,15 @@ ManglingConfig* get_config_fast() {
         .use_reverse = MANGLE_NONE,
         .use_common_words = MANGLE_NONE
     };
+}
+
+ManglingConfig* da_getConfigMangling(int config) {
+    switch (config) {
+        case DA_MANGLING_BALANCED : {return get_config_balanced(); break;}
+        case DA_MANGLING_AGGRESSIVE : {return get_config_aggressive(); break;}
+        default : {return get_config_fast(); break;}
+
+    }
 }
 
 // === EXEMPLE D'UTILISATION ===

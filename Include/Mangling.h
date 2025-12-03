@@ -27,6 +27,7 @@ void print_usage_example(int nb) ;
 ManglingConfig* get_config_aggressive() ;
 ManglingConfig* get_config_balanced() ;
 ManglingConfig* get_config_fast() ;
+ManglingConfig* da_getConfigMangling(int config) ;
 
 
 #endif //DA_MANGLING_H
