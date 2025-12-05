@@ -17,6 +17,8 @@
 #include "Hash_Engine.h"
 #include "Mangling.h"
 
+static inline void construire_mot_depuis_index(long long n,char *mot,const char *charset,int b, int max_len);
+
 void da_bruteforce(void) {
 
     char caracteres[256];
@@ -41,25 +43,8 @@ void da_bruteforce(void) {
 
             if (is_password_found()) continue;
 
-            int current_length = 1;
-            long long range = b;
-            long long local_index = n;
+            construire_mot_depuis_index(n, word,caracteres,b,length);
 
-            while (local_index >= range && current_length < length) {
-                local_index -= range;
-                current_length++;
-                range *= b;
-            }
-
-            // ÉTAPE 2 : Générer le mot de cette longueur
-            word[current_length] = '\0';
-
-            long long x = local_index;
-            for (int i = current_length - 1; i >= 0; i--) {
-                int r = x % b;
-                x = x / b;
-                word[i] = caracteres[r];
-            }
             da_hash_compare(word,NULL);
             //if (n==5100000) printf("%d : %s\n",n,word);
 
@@ -71,9 +56,11 @@ void da_bruteforce(void) {
                }
              }
         }
-    print_progress_bar(total,total,word,true);
     }
-    printf("total : %llu\n",total);
+    char last_word[DA_MAX_LEN+1] = {'\0'};
+    if (!is_password_found()) construire_mot_depuis_index(total,last_word,caracteres,b,length);
+    else get_found_password(last_word,DA_MAX_LEN+1);
+    print_progress_bar(total,total,last_word,true);
 }
 
 void da_bruteforce_mangling(ManglingConfig *config) {
@@ -95,30 +82,13 @@ void da_bruteforce_mangling(ManglingConfig *config) {
         char word[DA_MAX_LEN+1];
         word[length] = '\0';
 
-        #pragma omp for schedule(static)
+    #pragma omp for schedule(static)
         for (long long n = 0; n < total; n++) {
 
             if (is_password_found()) continue;
 
-            int current_length = 1;
-            long long range = b;
-            long long local_index = n;
+            construire_mot_depuis_index(n, word, caracteres, b, length);
 
-            while (local_index >= range && current_length < length) {
-                local_index -= range;
-                current_length++;
-                range *= b;
-            }
-
-            // ÉTAPE 2 : Générer le mot de cette longueur
-            word[current_length] = '\0';
-
-            long long x = local_index;
-            for (int i = current_length - 1; i >= 0; i--) {
-                int r = x % b;
-                x = x / b;
-                word[i] = caracteres[r];
-            }
             generate_mangled_words(word,config);// le mangling verifie le mot de base...
             //if (n==5100000) printf("%d : %s\n",n,word);
 
@@ -130,8 +100,12 @@ void da_bruteforce_mangling(ManglingConfig *config) {
                 }
             }
         }
-        print_progress_bar(total,total,word,true);
     }
+    char last_word[DA_MAX_LEN+1] = {'\0'};
+    if (!is_password_found()) construire_mot_depuis_index(total,last_word,caracteres,b,length);
+    else get_found_password(last_word,DA_MAX_LEN+1);
+    print_progress_bar(total, total, last_word, true);
+
     printf("total : %llu\n",total);
 }
 
@@ -181,6 +155,27 @@ int build_charset(char *out, size_t out_size,
 }
 
 
+static inline void construire_mot_depuis_index(long long n,char *mot,const char *charset,int b, int max_len)
+{
+    int longueur = 1;
+    long long plage = b;
+    long long idx = n;
+
+    // Calcul de la longueur du mot
+    while (idx >= plage && longueur < max_len) {
+        idx -= plage;
+        longueur++;
+        plage *= b;
+    }
+
+    mot[longueur] = '\0';
+
+    // Construction du mot (base b)
+    for (int i = longueur - 1; i >= 0; i--) {
+        mot[i] = charset[idx % b];
+        idx /= b;
+    }
+}
 
 
 
