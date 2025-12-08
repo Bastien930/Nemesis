@@ -91,10 +91,11 @@ static void run_attack(void) {
 
     if (da_config.attack.enable_dictionary && !da_config.attack.enable_bruteforce){;}
 
-    /*if (da_config.attack.enable_bruteforce && !da_config.attack.enable_dictionary) {
-        if (da_config.attack.enable_mangling) da_bruteforce_mangling(da_getConfigMangling(da_config.attack.mangling_config));
-        else da_bruteforce();
-    }*/
+    if (da_config.attack.enable_bruteforce && !da_config.attack.enable_dictionary) {
+        //if (da_config.attack.enable_mangling) da_bruteforce_mangling(da_getConfigMangling(da_config.attack.mangling_config));
+        //else da_bruteforce();
+        da_bruteforce();
+    }
     //#pragma omp parallel for schedule(dynamic) // pbar de progression
     //for (int i=0;i<100;i++) {
     //    generate_mangled_words("hello la team",get_config_fast());
