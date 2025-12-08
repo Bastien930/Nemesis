@@ -166,7 +166,7 @@ void da_print_usage(const char *progname) {
     puts("  -d, --dictionary           Activer le mode dictionnaire (par défaut).");
     puts("  -b, --bruteforce           Activer le mode bruteforce (optionnel).");
     puts("  -c, --charset <preset|chars> Charset prédéfini ou liste explicite de caractères.");
-    puts("                             presets: default, alphanum, numeric, allprint");
+    puts("                             presets: default, alphanum, numeric, <custom>");
     puts("      --min <n>              Longueur minimale pour génération brutforce (défaut : " STR(DA_MIN_LEN) ").");
     puts("      --max <n>              Longueur maximale pour génération brutforce (défaut : " STR(DA_MAX_LEN) ").");
     puts("  -t, --threads <n>          Nombre de threads (défaut : 1).");

@@ -31,7 +31,7 @@ int main(int argc, char* argv[]){
 
     char errbuff[DA_ERRLEN];
 
-    //print_banner();
+    print_banner();
     //sleep(10);
     init_time();
     da_config_init_default(&da_config);
@@ -39,12 +39,12 @@ int main(int argc, char* argv[]){
 
 
 
-
-    if (parse_args(argc, argv, &da_config) == 2) {
+    int retour_parse_args = parse_args(argc, argv, &da_config);
+    if (retour_parse_args == 2) {
         return 0;
     }
 
-    if (parse_args(argc, argv, &da_config) != 0) {
+    if (retour_parse_args != 0) {
         return EXIT_FAILURE;
     }
     if (da_config_validate(&da_config,errbuff,DA_ERRLEN) != 0) {
@@ -91,10 +91,10 @@ static void run_attack(void) {
 
     if (da_config.attack.enable_dictionary && !da_config.attack.enable_bruteforce){;}
 
-    if (da_config.attack.enable_bruteforce && !da_config.attack.enable_dictionary) {
+    /*if (da_config.attack.enable_bruteforce && !da_config.attack.enable_dictionary) {
         if (da_config.attack.enable_mangling) da_bruteforce_mangling(da_getConfigMangling(da_config.attack.mangling_config));
         else da_bruteforce();
-    }
+    }*/
     //#pragma omp parallel for schedule(dynamic) // pbar de progression
     //for (int i=0;i<100;i++) {
     //    generate_mangled_words("hello la team",get_config_fast());
@@ -106,6 +106,8 @@ static void run_attack(void) {
     free(e);
 
     show_result();
+
+    close_log();
     // rajouter le faite de print dans la sortie en fnct du type de sortie
 }
 

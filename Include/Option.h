@@ -20,7 +20,7 @@ enum {
 };
 
 /* options courtes acceptées */
-static const char *short_options = "s:w:m:dbc:t:o:h";
+static const char *short_options = "s:w:mdbc:t:o:h";
 
 /* tableau des options longues (getopt_long) */
 static struct option long_options[] = {

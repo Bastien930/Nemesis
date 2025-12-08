@@ -17,6 +17,7 @@ int parse_args(int argc, char *argv[], struct da_config_t *cfg) {
     int long_index = 0;
 
     while ((option = getopt_long(argc, argv, short_options, long_options, &long_index)) != -1) {
+        //printf("parse args : %d : %s: %d\n",option,optarg,optind);
         switch (option) {
         case 's': {
             strncpy(cfg->input.shadow_file, optarg, sizeof(cfg->input.shadow_file) - 1);

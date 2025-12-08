@@ -626,6 +626,14 @@ ManglingConfig* da_getConfigMangling(int config) {
 
     }
 }
+int da_get_iteration_of_mangling(int config) {
+    switch (config) {
+        case DA_MANGLING_BALANCED : {return 222; break;}
+        case DA_MANGLING_AGGRESSIVE : {return 606; break;}
+        default : {return 905; break;}
+
+    }
+}
 
 // === EXEMPLE D'UTILISATION ===
 

@@ -63,7 +63,7 @@ void da_bruteforce(void) {
     print_progress_bar(total,total,last_word,true);
 }
 
-void da_bruteforce_mangling(ManglingConfig *config) {
+/*void da_bruteforce_mangling(ManglingConfig *config) {
 
     char caracteres[256];
 
@@ -76,6 +76,7 @@ void da_bruteforce_mangling(ManglingConfig *config) {
     const int b = len;
     const int length = DA_MAX_LEN;
     const long long total = puissance(len,DA_MAX_LEN);
+    const int mangling_itération = DA_GET_ITERATION_OF_MANGLING(da_config.attack.mangling_config);
 
     #pragma omp parallel
     {
@@ -96,7 +97,7 @@ void da_bruteforce_mangling(ManglingConfig *config) {
             if (count%10000==0) {
                 #pragma omp critical
                 {
-                    print_progress_bar(count,total,word,false);
+                    print_progress_bar(count*mangling_itération,total*mangling_itération,word,false);
                 }
             }
         }
@@ -107,7 +108,7 @@ void da_bruteforce_mangling(ManglingConfig *config) {
     print_progress_bar(total, total, last_word, true);
 
     printf("total : %llu\n",total);
-}
+}*/
 
 
 int build_charset(char *out, size_t out_size,
