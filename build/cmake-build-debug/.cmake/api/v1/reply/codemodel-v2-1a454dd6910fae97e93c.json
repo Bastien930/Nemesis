@@ -27,7 +27,7 @@
 					[
 						0
 					],
-					"name" : "DA",
+					"name" : "Nemesis",
 					"targetIndexes" : 
 					[
 						0
@@ -38,9 +38,9 @@
 			[
 				{
 					"directoryIndex" : 0,
-					"id" : "DA::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-DA-Debug-181654fad8909f5328d8.json",
-					"name" : "DA",
+					"id" : "Nemesis::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-Nemesis-Debug-cfb53424a1f82caa59f2.json",
+					"name" : "Nemesis",
 					"projectIndex" : 0
 				}
 			]

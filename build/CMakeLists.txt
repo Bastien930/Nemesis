@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.31)
-project(DA C)
+project(Nemesis C)
 
 set(CMAKE_C_STANDARD 23)
 
@@ -10,7 +10,7 @@ endif()
 
 include_directories(../Include)
 
-add_executable(DA
+add_executable(Nemesis
         ../src/main.c
         ../src/Option.c
         ../src/Shadow.c
@@ -31,12 +31,12 @@ add_executable(DA
         ../Include/hashSet.h
 )
 
-target_link_libraries(DA crypto) #pour open/ssl
-target_link_libraries(DA crypt) #temporaire
+target_link_libraries(Nemesis crypto) #pour open/ssl
+target_link_libraries(Nemesis crypt) #temporaire
 find_package(OpenMP REQUIRED)
 
 if(OpenMP_C_FOUND)
-    target_link_libraries(DA OpenMP::OpenMP_C)
+    target_link_libraries(Nemesis OpenMP::OpenMP_C)
 endif()
 
 # Optimisations

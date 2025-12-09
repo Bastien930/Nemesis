@@ -719,7 +719,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "DA"
+			"value" : "Nemesis"
 		},
 		{
 			"name" : "CMAKE_RANLIB",
@@ -1076,6 +1076,42 @@
 			],
 			"type" : "INTERNAL",
 			"value" : "[-fopenmp][/usr/lib/gcc/x86_64-linux-gnu/14/libgomp.so][/usr/lib/x86_64-linux-gnu/libpthread.a][v4.5()]"
+		},
+		{
+			"name" : "Nemesis_BINARY_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "/home/bastien/SAE_DA/sae_systeme/build/cmake-build-debug"
+		},
+		{
+			"name" : "Nemesis_IS_TOP_LEVEL",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "ON"
+		},
+		{
+			"name" : "Nemesis_SOURCE_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Value Computed by CMake"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "/home/bastien/SAE_DA/sae_systeme/build"
 		},
 		{
 			"name" : "OpenMP_COMPILE_RESULT_C_fopenmp",

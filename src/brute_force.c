@@ -168,6 +168,11 @@ static inline void construire_mot_depuis_index(long long n,char *mot,const char 
         longueur++;
         plage *= b;
     }
+    // piur 95
+    //0-95 longeur 1
+    // 96-9025 longeur 2
+    //9025-857 375 longeur 3
+    //857 375-81 450 625 longeur 4
 
     mot[longueur] = '\0';
 
@@ -176,6 +181,12 @@ static inline void construire_mot_depuis_index(long long n,char *mot,const char 
         mot[i] = charset[idx % b];
         idx /= b;
     }
+    /* 7809
+     * caractere 19.
+     * caractere 82.
+     * reste 0 donc fin.
+     *
+    */
 }
 
 
