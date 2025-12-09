@@ -10,6 +10,7 @@ endif()
 
 include_directories(../Include)
 
+
 add_executable(Nemesis
         ../src/main.c
         ../src/Option.c
