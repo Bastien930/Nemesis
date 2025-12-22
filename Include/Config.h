@@ -6,6 +6,8 @@
 #define DA_CONFIG_H
 
 
+#include <signal.h>
+#include <stdatomic.h>
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -23,12 +25,14 @@
 ((config) == DA_MANGLING_BALANCED   ? DA_MANGLING_FAST : \
 ((config) == DA_MANGLING_AGGRESSIVE ? DA_MANGLING_BALANCED : \
 DA_MANGLING_AGGRESSIVE))
+#define DA_STOPPED_FILE "da_binary.conf"
 
 
 //#define DA_MAX_ALLOWED_LEN 64
 //#define DA_MIN_ALLOWED_LEN 1
 
-#define DA_VERSION "0.3"
+#define DA_VERSION 3
+#define DA_CONFIG_MAGIC 0x43464731
 #define DA_BUILD_DATE __DATE__ " " __TIME__
 #define DA_AUTHOR "BASTIEN-ALEXIS-ILIAN"
 #define DA_ERRLEN 2048
@@ -84,13 +88,13 @@ struct da_system {
 };
 
 struct da_meta {
-    const char *version;
+    int version;
     const char *build_date;
     const char *author;
 };
 
 /* Config principale */
-struct da_config_t {
+typedef struct {
     struct da_input input;
     struct da_attack attack;
     struct da_output output;
@@ -98,13 +102,31 @@ struct da_config_t {
     struct da_meta meta;
 
     //bool show_help;
+}da_config_t;
+
+struct da_config_file {
+    __uint32_t magic;
+    __uint32_t version;
+    __uint32_t checksum;
+
+    // Données sérialisables (sans pointeurs)
+    struct da_input input;
+    struct da_attack attack;
+    struct da_output output;
+    struct da_system system;
+
+    // Meta: seulement la version (pas les pointeurs)
+    int meta_version;
 };
 
-extern struct da_config_t da_config;
+extern da_config_t da_config;
+extern volatile sig_atomic_t interrupt_requested;
 
-void da_config_init_default(struct da_config_t *cfg);
-int da_config_validate(const struct da_config_t *cfg, char *errbuf, size_t errlen);
+void da_config_init_default(da_config_t *cfg);
+int da_config_validate(const da_config_t *cfg, char *errbuf, size_t errlen);
 void da_print_usage(const char *progname);
-
+int da_save_config(FILE *file,da_config_t *config);
+int da_load_config(FILE *file,da_config_t *config) ;
+void da_safe_save_config() ;
 
 #endif //DA_CONFIG_H

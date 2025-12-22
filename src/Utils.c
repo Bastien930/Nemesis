@@ -11,6 +11,7 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include "Hash_Engine.h"
+#include "Config.h"
 #include <omp.h>
 
 #include <stdio.h>
@@ -20,6 +21,8 @@
 #define RESET "\x1b[0m"
 
 #include <string.h>
+
+#include "main.h"
 
 long da_iteration = 1;
 
@@ -56,6 +59,7 @@ void print_progress_bar(long long current, long long total, const char *word,boo
     if (is_slow) sleep(2);
 }
 
+
 void set_found_password(const char *pw) {
     if (!pw) return;
 
@@ -66,6 +70,15 @@ void set_found_password(const char *pw) {
 
     // lever le flag atomiquement
     atomic_store_explicit(&g_password_found, 1, memory_order_release);
+}
+
+void reset_found_password(void) {
+    pthread_mutex_lock(&g_found_password_lock);
+    g_found_password[0] = '\0';
+    pthread_mutex_unlock(&g_found_password_lock);
+
+    // lever le flag atomiquement
+    atomic_store_explicit(&g_password_found,0, memory_order_release);
 }
 
 bool is_password_found(void) {
@@ -84,6 +97,7 @@ void get_found_password(char *buf, size_t bufsize) {
 
 
 
+
 void print_slow(const char *text, useconds_t delay_us) {
     for (const char *p = text; *p != '\0'; p++) {
         printf("%c", *p);
@@ -96,15 +110,15 @@ long count_iteration(int iteration) {
     ;
 }
 
-void show_result(void) {
+void show_result(struct da_shadow_entry* shadow_entry) {
     char buff[MAX_WORD_LEN];
     get_found_password(buff,MAX_WORD_LEN);
     double temp_omp = omp_get_wtime() - start_omp;
     double temp_cpu = ((double)(clock() - start)) / CLOCKS_PER_SEC;
 
-
-    if (strlen(buff)==0) printf("aucune correspondance a été trouvé...\n");
-    else printf("le password trouve est : %s\n",buff);
+    if (strlen(buff)==0) printf("aucune correspondance a été trouvé... pour l'utilisateur : %s\n",shadow_entry->username);
+    else printf("le password trouve est : %s pour l'utilisateur : %s\n",buff,shadow_entry->username);
+    printf("Le hash correpondant est : %s avec pour salt : %s\n",shadow_entry->hash,shadow_entry->salt);
     printf("%lu mots de passe testé en : %.2f secondes\n", da_hash_get_count(),temp_omp);
     printf("Temps réel écoulé : %.2f secondes\n", temp_omp);
     printf("Temps CPU cumulé : %.2f secondes\n", temp_cpu);
@@ -136,6 +150,21 @@ long long puissance(int base, int exp) {
         res *= base;
     }
     return res;
+}
+
+int File_exist(const char *path) {
+    return access(path, F_OK) == 0;
+}
+
+
+int ask_input(char *buff,char *message,size_t len) {
+    printf("%s",message);
+    if (!buff || len == 0)
+        return -1;
+
+    if (!fgets(buff, len, stdin))
+        return -1;
+    return 0;
 }
 
 

@@ -44,6 +44,6 @@ static struct option long_options[] = {
     {0, 0, 0, 0}
 };
 
-int parse_args(int argc,char *argv[], struct da_config_t *cfg);
+int parse_args(int argc,char *argv[], da_config_t *cfg);
 
 #endif //DA_OPTION_H

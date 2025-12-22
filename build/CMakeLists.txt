@@ -33,6 +33,7 @@ add_executable(Nemesis
 )
 
 target_link_libraries(Nemesis crypto) #pour open/ssl
+target_link_libraries(Nemesis z) #pour open/ssl
 target_link_libraries(Nemesis crypt) #temporaire
 find_package(OpenMP REQUIRED)
 

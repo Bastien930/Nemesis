@@ -29,13 +29,7 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 13,
-				"parent" : 0
-			},
-			{
-				"command" : 1,
-				"file" : 0,
-				"line" : 34,
+				"line" : 14,
 				"parent" : 0
 			},
 			{
@@ -45,25 +39,37 @@
 				"parent" : 0
 			},
 			{
-				"command" : 3,
+				"command" : 1,
 				"file" : 0,
 				"line" : 36,
 				"parent" : 0
 			},
 			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 37,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 38,
+				"parent" : 0
+			},
+			{
 				"file" : 1,
-				"parent" : 4
+				"parent" : 5
 			},
 			{
 				"command" : 2,
 				"file" : 1,
 				"line" : 655,
-				"parent" : 5
+				"parent" : 6
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 39,
+				"line" : 41,
 				"parent" : 0
 			},
 			{
@@ -83,14 +89,14 @@
 					"fragment" : "-g -std=gnu2x -fdiagnostics-color=always"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 8,
 					"fragment" : "-fopenmp"
 				}
 			],
 			"includes" : 
 			[
 				{
-					"backtrace" : 8,
+					"backtrace" : 9,
 					"path" : "/home/bastien/SAE_DA/sae_systeme/build/../Include"
 				}
 			],
@@ -139,16 +145,21 @@
 			},
 			{
 				"backtrace" : 3,
+				"fragment" : "-lz",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 4,
 				"fragment" : "-lcrypt",
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 6,
+				"backtrace" : 7,
 				"fragment" : "/usr/lib/gcc/x86_64-linux-gnu/14/libgomp.so",
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 6,
+				"backtrace" : 7,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/libpthread.a",
 				"role" : "libraries"
 			}

@@ -17,7 +17,7 @@ int da_load_shadow_file(const char* path,struct da_shadow_entry_list *list);
 
 void da_free_shadow_entry_list(struct da_shadow_entry_list *to_free);
 
-bool da_add_shadow_entry(struct da_shadow_entry *to_add);
+bool da_add_shadow_entry(struct da_shadow_entry *to_add,struct da_shadow_entry_list *list);
 
 void da_init_shadow_entry_list(struct da_shadow_entry_list *list) ;
 

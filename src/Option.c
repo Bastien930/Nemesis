@@ -12,7 +12,7 @@
 #include <getopt.h>
 #include <stdbool.h>
 
-int parse_args(int argc, char *argv[], struct da_config_t *cfg) {
+int parse_args(int argc, char *argv[], da_config_t *cfg) {
     int option;
     int long_index = 0;
 
@@ -119,7 +119,7 @@ int parse_args(int argc, char *argv[], struct da_config_t *cfg) {
         }
 
         case OPT_VERSION: {
-            puts(DA_VERSION);
+            puts(STR(DA_VERSION));
             exit(EXIT_SUCCESS);
         }
 

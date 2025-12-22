@@ -20,7 +20,7 @@ int init_log(const char *filename, int level) { // le level correspond au level 
 }
 
 void write_log(LogLevel level, const char *message, const char *location) {
-    if (!log_config->file) return;
+    if (!log_config || !log_config->file) return;
 
     if (level > LOG_ERROR || level < LOG_DEBUG) level = log_config->log_level;
 
@@ -38,6 +38,7 @@ void write_log(LogLevel level, const char *message, const char *location) {
 }
 
 void close_log(void) {
+    if (!log_config)return;
     if (log_config->file) {
         fclose(log_config->file);
         log_config->file = NULL;

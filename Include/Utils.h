@@ -29,12 +29,16 @@ extern pthread_mutex_t g_found_password_lock;
 void set_found_password(const char *pw);    /* safe: store + set flag */
 bool is_password_found(void);               /* atomic load */
 void get_found_password(char *buf, size_t bufsize) ;
-void show_result(void);
+void show_result(struct da_shadow_entry* shadow_entry);
 void init_time(void);
 bool safe_concat(char *dest, size_t dest_size, const char *s1, const char *s2) ;
+void reset_found_password(void) ;
 
 long count_iteration(int iteration);
 long long puissance(int base, int exp);
 void print_progress_bar(long long current, long long total, const char *word,bool is_slow) ;
+int File_exist(const char *path) ;
+int ask_input(char *buff, char *message,size_t len) ;
+int da_need_save() ;
 
 #endif //DA_UTILS_H

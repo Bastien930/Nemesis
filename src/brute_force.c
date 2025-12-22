@@ -15,12 +15,14 @@
 #include "../Include/brute_force.h"
 
 #include "Hash_Engine.h"
+#include "main.h"
 #include "Mangling.h"
 
 static inline void construire_mot_depuis_index(long long n,char *mot,const char *charset,int b, int max_len);
 
 void da_bruteforce(void) {
 
+    printf("dans brute force\n");
     char caracteres[256];
 
     int len = build_charset(caracteres, sizeof(caracteres),
@@ -28,21 +30,26 @@ void da_bruteforce(void) {
                             da_config.attack.charset_custom);
 
     if (len < 0) { write_log(LOG_ERROR,"Erreur lors de l'initialisation du charset","brutforce");return;    }
-
     const int b = len;
     const int length = DA_MAX_LEN;
     const long long total = puissance(len,DA_MAX_LEN);
+    printf("len : %d total : %lld\n",len,total);
 
     #pragma omp parallel
     {
         char word[DA_MAX_LEN+1];
         word[length] = '\0';
 
-    #pragma omp for schedule(static)
+    #pragma omp for schedule(dynamic,10000)
         for (long long n = 0; n < total; n++) {
 
-            if (is_password_found()) continue;
 
+            if (interrupt_requested || is_password_found()) {
+                continue;
+            }
+
+            //printf("n : %d\n",n);
+            //fflush(stdout);
             construire_mot_depuis_index(n, word,caracteres,b,length);
 
             da_hash_compare(word,NULL);
@@ -57,11 +64,18 @@ void da_bruteforce(void) {
              }
         }
     }
-    char last_word[DA_MAX_LEN+1] = {'\0'};
-    if (!is_password_found()) construire_mot_depuis_index(total,last_word,caracteres,b,length);
-    else get_found_password(last_word,DA_MAX_LEN+1);
-    print_progress_bar(total,total,last_word,true);
+    if (interrupt_requested) da_safe_save_config();
+    else {
+        char last_word[DA_MAX_LEN+1] = {'\0'};
+        if (!is_password_found()) construire_mot_depuis_index(total,last_word,caracteres,b,length);
+        else get_found_password(last_word,DA_MAX_LEN+1);
+        print_progress_bar(total,total,last_word,true);
+    }
+    printf("\n");
+
 }
+
+
 
 /*void da_bruteforce_mangling(ManglingConfig *config) {
 

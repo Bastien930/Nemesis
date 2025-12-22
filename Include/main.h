@@ -5,4 +5,6 @@
 #ifndef DA_MAIN_H
 #define DA_MAIN_H
 
+void crash_handler(int sig) ;
+
 #endif //DA_MAIN_H

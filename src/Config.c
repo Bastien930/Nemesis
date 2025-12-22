@@ -8,12 +8,15 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stdint.h>
+#include <zlib.h>
 #include <stdlib.h>
 
+#include "log.h"
+#include "Utils.h"
 
 
-
-void da_config_init_default(struct da_config_t *cfg){
+void da_config_init_default(da_config_t *cfg){
     if (!cfg) return;
     memset(cfg, 0, sizeof(*cfg));
     cfg->input.shadow_file[0] = '\0';
@@ -55,7 +58,7 @@ void da_config_init_default(struct da_config_t *cfg){
   -6   = invalid threads value
   -7   = logging enabled but no log file
 */
-int da_config_validate(const struct da_config_t *cfg, char *errbuf, size_t errlen) {
+int da_config_validate(const da_config_t *cfg, char *errbuf, size_t errlen) {
     if (!cfg) {
         if (errbuf && errlen) snprintf(errbuf, errlen, "config is NULL");
         return -1;
@@ -195,3 +198,171 @@ void da_print_usage(const char *progname) {
     puts("  - Préférez le mode simulation avant de lancer des opérations réelles.");
     puts("");
 }
+#include "Config.h"
+#include <string.h>
+#include <zlib.h>
+
+int da_save_config(FILE *file, da_config_t *config) {
+    if (!file || !config) return -1;
+
+    struct da_config_file config_file;
+
+    // Initialiser à zéro pour éviter les données non initialisées
+    memset(&config_file, 0, sizeof(config_file));
+
+    // En-tête
+    config_file.magic = DA_CONFIG_MAGIC;
+    config_file.version = DA_VERSION;
+
+    // Copier les structures (qui ne contiennent QUE des tableaux, pas de pointeurs)
+    config_file.input = config->input;
+    config_file.attack = config->attack;
+    config_file.output = config->output;
+    config_file.system = config->system;
+    config_file.meta_version = config->meta.version;
+
+    // Calculer le checksum sur toutes les données SAUF le champ checksum lui-même
+    size_t data_size = sizeof(config_file) - sizeof(config_file.checksum);
+    uLong checksum = crc32(0uL, Z_NULL, 0);
+    checksum = crc32(checksum, (const Bytef *)&config_file, data_size);
+
+    config_file.checksum = checksum;
+
+    // Écrire la structure complète
+    if (fwrite(&config_file, sizeof(config_file), 1, file) != 1) {
+        return -1;
+    }
+
+    fflush(file);
+    fclose(file);
+    return 0;
+}
+
+int da_load_config(FILE *file, da_config_t *config) {
+    if (!file || !config) return -1;
+
+    struct da_config_file config_file;
+
+    // Lire la structure complète
+    if (fread(&config_file, sizeof(config_file), 1, file) != 1) {
+        fclose(file);
+        return -1;
+    }
+
+    fclose(file);
+
+    // Vérifier le magic number
+    if (config_file.magic != DA_CONFIG_MAGIC) {
+        fprintf(stderr, "Erreur: Magic number invalide (0x%X au lieu de 0x%X)\n",
+                config_file.magic, DA_CONFIG_MAGIC);
+        return -1;
+    }
+
+    // Vérifier la version
+    if (config_file.version != DA_VERSION) {
+        fprintf(stderr, "Erreur: Version incompatible (%u au lieu de %u)\n",
+                config_file.version, DA_VERSION);
+        return -1;
+    }
+
+    // Vérifier le checksum
+    __uint32_t saved_checksum = config_file.checksum;
+    config_file.checksum = 0;  // Mettre à zéro pour recalculer
+
+    size_t data_size = sizeof(config_file) - sizeof(config_file.checksum);
+    uLong calculated_checksum = crc32(0uL, Z_NULL, 0);
+    calculated_checksum = crc32(calculated_checksum, (const Bytef *)&config_file, data_size);
+
+    if (saved_checksum != calculated_checksum) {
+        fprintf(stderr, "Erreur: Checksum invalide (0x%X au lieu de 0x%X)\n",
+                calculated_checksum, saved_checksum);
+        return -1;
+    }
+
+    // Restaurer les données dans la config
+    config->input = config_file.input;
+    config->attack = config_file.attack;
+    config->output = config_file.output;
+    config->system = config_file.system;
+    config->meta.version = config_file.meta_version;
+
+    // Restaurer les pointeurs constants de meta (pas sauvegardés)
+    config->meta.build_date = DA_BUILD_DATE;
+    config->meta.author = DA_AUTHOR;
+
+    return 0;
+}
+
+void da_safe_save_config(void) {
+    // Vérifier si un fichier existe déjà
+    if (File_exist(DA_STOPPED_FILE)) {
+        char res[64];
+        printf("Une configuration existe déjà, l'écraser ? (Y/N) : ");
+        fflush(stdout);
+
+        if (fgets(res, sizeof(res), stdin) == NULL) return;
+
+        if (res[0] != 'Y' && res[0] != 'y') {
+            printf("Sauvegarde annulée.\n");
+            return;
+        }
+    }
+
+    FILE *f = fopen(DA_STOPPED_FILE, "wb");  // Mode binaire important !
+    if (!f) {
+        perror("Impossible d'ouvrir le fichier de sauvegarde");
+        return;
+    }
+
+    if (da_save_config(f, &da_config) != 0) {
+        fprintf(stderr, "Erreur lors de la sauvegarde de la configuration\n");
+        return;
+    }
+
+    printf("✓ Configuration sauvegardée dans '%s'\n", DA_STOPPED_FILE);
+}
+
+/*int da_save_config(FILE *file,da_config_t *config) {
+    if (!file || !config) return -1;
+
+    struct da_config_file config_file;
+
+    config_file.magic   = DA_CONFIG_MAGIC;
+    config_file.version = DA_VERSION;
+    config_file.da_config = *config;
+
+    printf("Da_config : %s\n",config_file.da_config.input.shadow_file);
+    uLong checksum = crc32(0uL, Z_NULL, 0);
+    checksum = crc32(checksum,(const Bytef *)&config_file.da_config,sizeof(da_config_t));
+
+    config_file.checksum = checksum;
+
+    if (fwrite(&config_file, sizeof(config_file), 1, file) != 1)
+        return -1;
+
+    fclose(file);
+    return 0;
+}*/
+
+
+/*int da_load_config(FILE *file,da_config_t *config) { // la fonctrion appelante devra ouvrir le fichier
+
+    if (!file || !config) return -1;
+
+    struct da_config_file config_file;
+    fread(&config_file, sizeof(config_file), 1, file);
+    fclose(file);
+
+    if (config_file.magic!=DA_CONFIG_MAGIC)return -1;
+    if (config_file.version!=DA_VERSION)return -1;
+
+    uLong checksum = crc32(0uL,Z_NULL,0);
+    checksum = crc32(checksum,(const Bytef *)&config_file.da_config,sizeof(da_config_t));
+
+    if (checksum!=config_file.checksum)return -1;
+
+    *config = config_file.da_config;
+    return 0;
+
+}*/
+
