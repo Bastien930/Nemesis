@@ -29,6 +29,7 @@ da_config_t da_config = {0};
 //static struct da_shadow_entry *da_entry = NULL;
 struct da_shadow_entry_list da_shadow_entry_liste = {0};
 volatile sig_atomic_t interrupt_requested = 0;
+char SavePath[128] = {STR(DIR_OF_EXE)};
 
 
 static void run_attack(void);
@@ -75,7 +76,7 @@ int main(int argc, char* argv[]){
     atexit(global_cleanup);
 
 
-    print_banner();
+    //print_banner();
     //sleep(10);
 
     da_config_init_default(&da_config);
@@ -84,11 +85,15 @@ int main(int argc, char* argv[]){
 
 
     int retour_parse_args = parse_args(argc, argv, &da_config);
+    printf("retour parse args : %d\n",retour_parse_args);
     if (retour_parse_args == 2) {
         return 0;
     }
+    if (retour_parse_args==1) {
+        int retourn = da_load_config(&da_config);
+    }
 
-    if (retour_parse_args != 0) {
+    if (retour_parse_args < 0 ) {
         return EXIT_FAILURE;
     }
     if (da_config_validate(&da_config,errbuff,DA_ERRLEN) != 0) {
@@ -110,6 +115,7 @@ static void run_attack(void) {
     // si dictionnaire
     // si brutforce.
     // si mangling echec.
+    printf("Flag run_attack\n");
     if (da_config.output.enable_logging) {if (!init_log(da_config.output.log_file,LOG_DEBUG)) perror("log init");}
 
     da_init_shadow_entry_list(&da_shadow_entry_liste);
@@ -140,7 +146,7 @@ static void run_attack(void) {
         printf("il y a : %d shadow entry",da_shadow_entry_liste.count);
         printf("%s\n%s\n%s\n",da_shadow_entry_liste.entries[i]->username,da_shadow_entry_liste.entries[i]->hash,da_shadow_entry_liste.entries[i]->salt);
 
-        init_time();
+        init_time(); // le end time ce fait par les fnct de brut force.
         reset_found_password();
 
         if (!da_hash_engine_init(da_shadow_entry_liste.entries[i])) {write_log(LOG_ERROR,"erreur lors de l'initialisation du moteur de hash.","run_attack");perror("engine init");}
@@ -152,8 +158,10 @@ static void run_attack(void) {
         if (da_config.attack.enable_bruteforce && !da_config.attack.enable_dictionary) {
             //if (da_config.attack.enable_mangling) da_bruteforce_mangling(da_getConfigMangling(da_config.attack.mangling_config));
             //else da_bruteforce();
-            da_bruteforce();
+            da_brute_status_t st = da_bruteforce();
+            if (st == DA_BRUTE_INTERRUPTED)da_safe_save_config();
         }
+
         //#pragma omp parallel for schedule(dynamic) // pbar de progression
         //for (int i=0;i<100;i++) {
         //    generate_mangled_words("hello la team",get_config_fast());

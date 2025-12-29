@@ -8,12 +8,19 @@
 #include "Config.h"
 #include "Mangling.h"
 
-int fctapelante();
+typedef enum {
+    DA_BRUTE_DONE,
+    DA_BRUTE_INTERRUPTED,
+    DA_BRUTE_ERROR
+} da_brute_status_t;
 
-void da_bruteforce(void) ;
+da_brute_status_t da_bruteforce(void) ;
 void da_bruteforce_mangling(ManglingConfig *config) ;
+void save_thread_states(void);
 #include <stdio.h>
 #include <string.h>
+
+
 
 int build_charset(char *out, size_t out_size,da_charset_preset_t preset,const char *custom_charset);
 

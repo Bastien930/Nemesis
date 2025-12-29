@@ -16,7 +16,8 @@ enum {
     OPT_LOG,
     OPT_ENABLE_GPU,
     OPT_MAX_ATTEMPTS,
-    OPT_VERSION
+    OPT_VERSION,
+    OPT_RESUME
 };
 
 /* options courtes acceptées */
@@ -27,6 +28,7 @@ static struct option long_options[] = {
     /* name           has_arg          flag  val */
     {"shadow",        required_argument, 0, 's'},          /* -s, --shadow <file> */
     {"wordlist",      required_argument, 0, 'w'},          /* -w, --wordlist <file> */
+    {"resume",      no_argument, 0, OPT_RESUME},          /* -w, --wordlist <file> */
     {"mangling",      optional_argument, 0, 'm'},          /* -m, --mangling <rules> */
     {"dictionary",    no_argument,       0, 'd'},          /* -d, --dictionary */
     {"bruteforce",    no_argument,       0, 'b'},          /* -b, --bruteforce */

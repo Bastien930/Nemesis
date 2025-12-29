@@ -12,9 +12,12 @@
 #include <getopt.h>
 #include <stdbool.h>
 
+#include "Utils.h"
+
 int parse_args(int argc, char *argv[], da_config_t *cfg) {
     int option;
     int long_index = 0;
+    int return_value = 0;
 
     while ((option = getopt_long(argc, argv, short_options, long_options, &long_index)) != -1) {
         //printf("parse args : %d : %s: %d\n",option,optarg,optind);
@@ -80,7 +83,8 @@ int parse_args(int argc, char *argv[], da_config_t *cfg) {
 
         case 'h': {
             da_print_usage(argv[0]);
-            return 2;
+            return_value = 2;
+            break;
         }
 
         case OPT_MIN: {
@@ -122,6 +126,12 @@ int parse_args(int argc, char *argv[], da_config_t *cfg) {
             puts(STR(DA_VERSION));
             exit(EXIT_SUCCESS);
         }
+        case OPT_RESUME: {
+            cfg->input.save = 1;
+            if (return_value<2)
+                return_value = 1;
+            break;
+            }
 
         default: {
             return -1;
@@ -138,5 +148,5 @@ int parse_args(int argc, char *argv[], da_config_t *cfg) {
     }
 
 
-    return 0;
+    return return_value;
 }

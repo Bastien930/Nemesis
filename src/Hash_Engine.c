@@ -277,6 +277,11 @@ bool da_hash_engine_init(struct da_shadow_entry *entry) {
     da_hash_len = strlen(entry->hash);
     da_salt_len = strlen(entry->salt);
 
+    struct crypt_data warmup;
+    memset(&warmup, 0, sizeof(warmup));
+    crypt_r("warmup", "$5$abcd1234$", &warmup);
+
+
     /*if (base64_to_bin(da_hash, &da_hash_bin, &da_hash_len) != 0) {
         printf("erreur de conversion base64\n");
         return false;

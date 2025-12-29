@@ -82,6 +82,10 @@ CMakeFiles/Nemesis.dir/home/bastien/SAE_DA/sae_systeme/src/main.c.o: \
  /home/bastien/SAE_DA/sae_systeme/src/../Include/Config.h \
  /usr/lib/gcc/x86_64-linux-gnu/14/include/stdatomic.h \
  /usr/lib/gcc/x86_64-linux-gnu/14/include/stdbool.h \
+ /usr/lib/gcc/x86_64-linux-gnu/14/include/stdint.h /usr/include/stdint.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar.h \
+ /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+ /usr/include/x86_64-linux-gnu/bits/stdint-least.h \
  /home/bastien/SAE_DA/sae_systeme/src/../Include/Mangling.h \
  /home/bastien/SAE_DA/sae_systeme/src/../Include/Option.h \
  /home/bastien/SAE_DA/sae_systeme/src/../Include/Config.h \

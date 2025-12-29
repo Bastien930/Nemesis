@@ -27,7 +27,9 @@
 long da_iteration = 1;
 
 clock_t start;
+clock_t end;
 double start_omp;
+double end_omp;
 /* définition des variables globales */
 atomic_int g_password_found = 0;
 
@@ -40,7 +42,13 @@ void init_time(void) {
 
 }
 
-void print_progress_bar(long long current, long long total, const char *word,bool is_slow) {
+void end_time(void) {
+    end = clock();
+    end_omp = omp_get_wtime();
+
+}
+
+/*void print_progress_bar(long long current, long long total, const char *word,bool is_slow) {
     const int bar_width = 80;
     float progress = (float)current / total;
     int filled = (int)(progress * bar_width);
@@ -57,7 +65,7 @@ void print_progress_bar(long long current, long long total, const char *word,boo
            progress * 100, current, total, word);
     fflush(stdout);
     if (is_slow) sleep(2);
-}
+}*/
 
 
 void set_found_password(const char *pw) {
@@ -113,8 +121,8 @@ long count_iteration(int iteration) {
 void show_result(struct da_shadow_entry* shadow_entry) {
     char buff[MAX_WORD_LEN];
     get_found_password(buff,MAX_WORD_LEN);
-    double temp_omp = omp_get_wtime() - start_omp;
-    double temp_cpu = ((double)(clock() - start)) / CLOCKS_PER_SEC;
+    double temp_omp = end_omp-start_omp;
+    double temp_cpu = ((double)(end - start)) / CLOCKS_PER_SEC;
 
     if (strlen(buff)==0) printf("aucune correspondance a été trouvé... pour l'utilisateur : %s\n",shadow_entry->username);
     else printf("le password trouve est : %s pour l'utilisateur : %s\n",buff,shadow_entry->username);
@@ -144,7 +152,7 @@ bool safe_concat(char *dest, size_t dest_size, const char *s1, const char *s2) {
     return true;
 }
 
-long long puissance(int base, int exp) {
+uint_fast64_t puissance(int base, int exp) {
     long long res = 1;
     for (int i = 0; i < exp; i++) {
         res *= base;

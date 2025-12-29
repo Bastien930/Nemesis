@@ -12,6 +12,7 @@
 #include <zlib.h>
 #include <stdlib.h>
 
+#include "brute_force.h"
 #include "log.h"
 #include "Utils.h"
 
@@ -21,6 +22,7 @@ void da_config_init_default(da_config_t *cfg){
     memset(cfg, 0, sizeof(*cfg));
     cfg->input.shadow_file[0] = '\0';
     cfg->input.wordlist_file[0] = '\0';
+    cfg->input.save= 0;
 
     cfg->attack.enable_dictionary = false;
     cfg->attack.enable_bruteforce = true;
@@ -165,6 +167,7 @@ void da_print_usage(const char *progname) {
     puts("  -s, --shadow <file>        Fichier shadow (obligatoire).");
     puts("                             Utilisez '-' pour lire depuis stdin.");
     puts("  -w, --wordlist <file>      Fichier wordlist (pour attaque par dictionnaire).");
+    puts("      --resume               Active la reprise du programme a partir de la sauvegarde.");
     puts("  -m, --mangling <config>    Config vaut fast, balanced, agressive (défaut : fast).");
     puts("  -d, --dictionary           Activer le mode dictionnaire (par défaut).");
     puts("  -b, --bruteforce           Activer le mode bruteforce (optionnel).");
@@ -238,7 +241,10 @@ int da_save_config(FILE *file, da_config_t *config) {
     return 0;
 }
 
-int da_load_config(FILE *file, da_config_t *config) {
+int da_load_config(da_config_t *config) {
+    char full_path[DA_MAX_PATH];
+    snprintf(full_path, sizeof(full_path), "%s%s", SavePath, DA_STOPPED_FILE);
+    FILE *file = fopen(DA_STOPPED_FILE, "rb");
     if (!file || !config) return -1;
 
     struct da_config_file config_file;
@@ -285,6 +291,9 @@ int da_load_config(FILE *file, da_config_t *config) {
     config->output = config_file.output;
     config->system = config_file.system;
     config->meta.version = config_file.meta_version;
+    config->input.save = 1;
+
+
 
     // Restaurer les pointeurs constants de meta (pas sauvegardés)
     config->meta.build_date = DA_BUILD_DATE;
@@ -304,11 +313,15 @@ void da_safe_save_config(void) {
 
         if (res[0] != 'Y' && res[0] != 'y') {
             printf("Sauvegarde annulée.\n");
+
             return;
         }
     }
 
-    FILE *f = fopen(DA_STOPPED_FILE, "wb");  // Mode binaire important !
+    save_thread_states();
+    char full_path[DA_MAX_PATH];
+    snprintf(full_path, sizeof(full_path), "%s/%s", SavePath, DA_STOPPED_FILE);
+    FILE *f = fopen(DA_STOPPED_FILE, "wb");
     if (!f) {
         perror("Impossible d'ouvrir le fichier de sauvegarde");
         return;
@@ -319,7 +332,7 @@ void da_safe_save_config(void) {
         return;
     }
 
-    printf("✓ Configuration sauvegardée dans '%s'\n", DA_STOPPED_FILE);
+    printf("Configuration sauvegardée dans '%s'\n", DA_STOPPED_FILE);
 }
 
 /*int da_save_config(FILE *file,da_config_t *config) {

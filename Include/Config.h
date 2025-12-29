@@ -9,11 +9,13 @@
 #include <signal.h>
 #include <stdatomic.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #include "Mangling.h"
 
 #define DA_MAX_PATH 4096
+#define CHUNK_SIZE 2048
 #define DA_MAX_THREADS 256
 #define DA_MIN_LEN 1
 #define DA_MAX_LEN 4
@@ -36,9 +38,8 @@ DA_MANGLING_AGGRESSIVE))
 #define DA_BUILD_DATE __DATE__ " " __TIME__
 #define DA_AUTHOR "BASTIEN-ALEXIS-ILIAN"
 #define DA_ERRLEN 2048
+#define DIR_OF_EXE "/proc/self/"
 
-#define STR2(x) #x
-#define STR(x) STR2(x) // macro préprocesseur
 
 typedef enum {
     DA_OUT_AUTO,
@@ -58,6 +59,7 @@ typedef enum {
 struct da_input {
     char shadow_file[DA_MAX_PATH];
     char wordlist_file[DA_MAX_PATH];
+    int save;
 
 };
 
@@ -83,7 +85,7 @@ struct da_output {
 };
 
 struct da_system {
-    unsigned int threads;
+    int threads;
     bool enable_gpu;
 };
 
@@ -121,12 +123,13 @@ struct da_config_file {
 
 extern da_config_t da_config;
 extern volatile sig_atomic_t interrupt_requested;
+extern char SavePath[128];
 
 void da_config_init_default(da_config_t *cfg);
 int da_config_validate(const da_config_t *cfg, char *errbuf, size_t errlen);
 void da_print_usage(const char *progname);
 int da_save_config(FILE *file,da_config_t *config);
-int da_load_config(FILE *file,da_config_t *config) ;
+int da_load_config(da_config_t *config) ;
 void da_safe_save_config() ;
 
 #endif //DA_CONFIG_H
