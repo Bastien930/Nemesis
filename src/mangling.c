@@ -186,53 +186,53 @@ void module_leetspeak(const char *base, int mode, WordList *tmp) {
     // Variantes de remplacement PARTIEL (plus réalistes)
     // Remplace juste 'a' → '@'
     apply_leet_single(base, 'a', '@', buffer);
-    da_hash_compare(buffer,&hs);
+    NEMESIS_hash_compare(buffer,&hs);
     wordlist_add(tmp,buffer);
 
     // Remplace juste 'e' → '3'
     apply_leet_single(base, 'e', '3', buffer);
-    da_hash_compare(buffer,&hs);
+    NEMESIS_hash_compare(buffer,&hs);
     wordlist_add(tmp,buffer);
 
     // Remplace juste 'o' → '0'
     apply_leet_single(base, 'o', '0', buffer);
-    da_hash_compare(buffer,&hs);
+    NEMESIS_hash_compare(buffer,&hs);
     wordlist_add(tmp,buffer);
 
     // Remplace juste 's' → '$'
     apply_leet_single(base, 's', '$', buffer);
-    da_hash_compare(buffer,&hs);
+    NEMESIS_hash_compare(buffer,&hs);
     wordlist_add(tmp,buffer);
 
     // Remplacements sélectifs (2 caractères)
     apply_leet_selective(base, buffer, 0);  // a→@ et o→0
-    da_hash_compare(buffer,&hs);
+    NEMESIS_hash_compare(buffer,&hs);
     wordlist_add(tmp,buffer);
 
     apply_leet_selective(base, buffer, 1);  // e→3 et s→$
-    da_hash_compare(buffer,&hs);
+    NEMESIS_hash_compare(buffer,&hs);
     wordlist_add(tmp,buffer);
 
     if (mode == LEET_BASIC || mode == LEET_ALL) {
         // Remplacement complet basic
         apply_leet_full(base, buffer, 0);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
         wordlist_add(tmp,buffer);
     }
 
     if (mode == LEET_EXTENDED || mode == LEET_ALL) {
         // Remplacement complet extended
         apply_leet_full(base, buffer, 1);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
         wordlist_add(tmp,buffer);
 
         // Quelques variantes extended partielles
         apply_leet_single(base, 't', '7', buffer);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
         wordlist_add(tmp,buffer);
 
         apply_leet_single(base, 'i', '!', buffer);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
         wordlist_add(tmp,buffer);
     }
 }
@@ -267,25 +267,25 @@ void module_capitalization(const char *base, int mode) {
 
     if (mode == CAP_FIRST) {
         apply_cap_first(base, buffer);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
     } else if (mode == CAP_ALL) {
         apply_cap_all(base, buffer);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
     } else if (mode == CAP_ALTERNATE) {
         apply_cap_alternate(base, buffer);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
     } else if (mode == CAP_LAST) {
         apply_cap_last(base, buffer);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
     } else if (mode == CAP_ALL_VARIANTS) {
         apply_cap_first(base, buffer);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
         apply_cap_all(base, buffer);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
         apply_cap_alternate(base, buffer);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
         apply_cap_last(base, buffer);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
     }
 }
 
@@ -295,7 +295,7 @@ void module_numeric_suffixes(const char *base) {
     char buffer[MAX_WORD_LEN];
     for (int i = 0; i < num_numeric_suffixes; i++) {
         snprintf(buffer, MAX_WORD_LEN, "%s%s", base, numeric_suffixes[i]);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
     }
 }
 
@@ -305,7 +305,7 @@ void module_year_suffixes(const char *base) {
     char buffer[MAX_WORD_LEN];
     for (int i = 0; i < num_year_suffixes; i++) {
         snprintf(buffer, MAX_WORD_LEN, "%s%s", base, year_suffixes[i]);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
     }
 }
 
@@ -315,7 +315,7 @@ void module_symbol_suffixes(const char *base) {
     char buffer[MAX_WORD_LEN];
     for (int i = 0; i < num_symbol_suffixes; i++) {
         snprintf(buffer, MAX_WORD_LEN, "%s%s", base, symbol_suffixes[i]);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
     }
 }
 
@@ -325,7 +325,7 @@ void module_prefixes(const char *base) {
     char buffer[MAX_WORD_LEN];
     for (int i = 0; i < num_common_prefixes; i++) {
         snprintf(buffer, MAX_WORD_LEN, "%s%s", common_prefixes[i], base);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
     }
 }
 
@@ -338,16 +338,16 @@ void module_repetition(const char *base) {
     // Répétition dernière lettre
     if (len > 0 && len < MAX_WORD_LEN - 2) {
         snprintf(buffer, MAX_WORD_LEN, "%s%c", base, base[len - 1]);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
         snprintf(buffer, MAX_WORD_LEN, "%s%c%c", base, base[len - 1], base[len - 1]);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
     }
 
     // Ajout de répétitions numériques
     const char *repeats[] = {"11", "111", "00"};
     for (int i = 0; i < 3; i++) {
         snprintf(buffer, MAX_WORD_LEN, "%s%s", base, repeats[i]);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
     }
 }
 
@@ -361,7 +361,7 @@ void module_reverse(const char *base) {
         buffer[i] = base[len - 1 - i];
     }
     buffer[len] = '\0';
-    da_hash_compare(buffer,&hs);
+    NEMESIS_hash_compare(buffer,&hs);
 }
 
 // === MODULE 9: MOTS COMMUNS ===
@@ -370,7 +370,7 @@ void module_common_words(const char *base) {
     char buffer[MAX_WORD_LEN];
     for (int i = 0; i < num_common_words; i++) {
         snprintf(buffer, MAX_WORD_LEN, "%s%s", base, common_words[i]);
-        da_hash_compare(buffer,&hs);
+        NEMESIS_hash_compare(buffer,&hs);
     }
 }
 
@@ -378,13 +378,13 @@ static inline void combine_variant_with_suffixes(const char *variant, ManglingCo
     char buf[MAX_WORD_LEN];
 
     // add base variant
-    da_hash_compare(variant,&hs);
+    NEMESIS_hash_compare(variant,&hs);
 
     // numeric suffixes
     if (config->use_numeric_suffixes) {
         for (int j = 0;j < num_numeric_suffixes; ++j) {
             snprintf(buf, MAX_WORD_LEN, "%s%s", variant, numeric_suffixes[j]);
-            da_hash_compare(buf,&hs);
+            NEMESIS_hash_compare(buf,&hs);
         }
     }
 
@@ -392,7 +392,7 @@ static inline void combine_variant_with_suffixes(const char *variant, ManglingCo
     if (config->use_year_suffixes) {
         for (int j = 0;j < num_year_suffixes; ++j) {
             snprintf(buf, MAX_WORD_LEN, "%s%s", variant, year_suffixes[j]);
-            da_hash_compare(buf,&hs);
+            NEMESIS_hash_compare(buf,&hs);
         }
     }
 
@@ -400,14 +400,14 @@ static inline void combine_variant_with_suffixes(const char *variant, ManglingCo
     if (config->use_symbol_suffixes) {
         for (int s = 0; s < num_symbol_suffixes; ++s) {
             snprintf(buf, MAX_WORD_LEN, "%s%s", variant, symbol_suffixes[s]);
-            da_hash_compare(buf,&hs);
+            NEMESIS_hash_compare(buf,&hs);
         }
     }
 
     // small combo numeric+symbol (keep very limited)
     if (config->use_numeric_suffixes && config->use_symbol_suffixes) {
             snprintf(buf, MAX_WORD_LEN, "%s%s%s", variant, numeric_suffixes[0], symbol_suffixes[0]);
-            da_hash_compare(buf,&hs);
+            NEMESIS_hash_compare(buf,&hs);
 
     }
 }
@@ -436,7 +436,7 @@ void generate_mangled_words(const char *base_word, ManglingConfig *config) {
 
     hashset_init(&hs);
 
-    da_hash_compare(base_word,&hs);
+    NEMESIS_hash_compare(base_word,&hs);
 
     char temp[MAX_WORD_LEN];
     char buffer[MAX_WORD_LEN];
@@ -499,7 +499,7 @@ void generate_mangled_words(const char *base_word, ManglingConfig *config) {
             apply_cap_first(base_word, temp);
             for (int s = 0; s < 3 && s < num_symbol_suffixes; s++) {
                 snprintf(buffer, MAX_WORD_LEN, "%s%s", temp, symbol_suffixes[s]);
-                da_hash_compare(buffer,&hs);
+                NEMESIS_hash_compare(buffer,&hs);
             }
         }
 
@@ -520,16 +520,16 @@ void generate_mangled_words(const char *base_word, ManglingConfig *config) {
         if (config->use_common_words) {
             for (int c = 0; c < num_common_words; c++) {
                 snprintf(buffer, MAX_WORD_LEN, "%s%s", base_word, common_words[c]);
-                da_hash_compare(buffer,&hs);
+                NEMESIS_hash_compare(buffer,&hs);
 
                 if (config->use_numeric_suffixes) {
                     snprintf(temp, MAX_WORD_LEN+1, "%s%s", buffer, numeric_suffixes[0]); // add '1' or first numeric
-                    da_hash_compare(temp,&hs);
+                    NEMESIS_hash_compare(temp,&hs);
                 }
 
                 if (config->use_symbol_suffixes) {
                     snprintf(temp, MAX_WORD_LEN+1, "%s%s", buffer, symbol_suffixes[0]); // '!' or first symbol
-                    da_hash_compare(temp,&hs);
+                    NEMESIS_hash_compare(temp,&hs);
                 }
             }
         }
@@ -549,7 +549,7 @@ void generate_mangled_words(const char *base_word, ManglingConfig *config) {
             for (int y = 0; y < 3 && y < num_year_suffixes; y++) {
                 for (int s = 0; s < 2 && s < num_symbol_suffixes; s++) {
                     snprintf(buffer, MAX_WORD_LEN, "%s%s%s", base_word, year_suffixes[y], symbol_suffixes[s]);
-                    da_hash_compare(buffer,&hs);
+                    NEMESIS_hash_compare(buffer,&hs);
                 }
             }
         }
@@ -564,7 +564,7 @@ void generate_mangled_words(const char *base_word, ManglingConfig *config) {
             reverse_str(base_word, temp); // utilitaire au-dessus
             for (int j = 0; j < 2 && j < num_numeric_suffixes; j++) {
                 snprintf(buffer, MAX_WORD_LEN, "%s%s", temp, numeric_suffixes[j]);
-                da_hash_compare(buffer,&hs);
+                NEMESIS_hash_compare(buffer,&hs);
             }
         }
     }
@@ -573,8 +573,8 @@ void generate_mangled_words(const char *base_word, ManglingConfig *config) {
 
 // === CONFIGURATIONS PRÉDÉFINIES ===
 
-ManglingConfig* get_config_aggressive() {
-    return &(ManglingConfig) {
+ManglingConfig get_config_aggressive() {
+    return (ManglingConfig) {
         .priority_level = PRIORITY_LOW,
         .use_leetspeak = LEET_ALL,
         .use_capitalization = CAP_ALL_VARIANTS,
@@ -588,8 +588,8 @@ ManglingConfig* get_config_aggressive() {
     };
 }
 
-ManglingConfig* get_config_balanced() {
-    return &(ManglingConfig) {
+ManglingConfig get_config_balanced() {
+    return (ManglingConfig) {
         .priority_level = PRIORITY_MEDIUM,
         .use_leetspeak = LEET_BASIC,
         .use_capitalization = CAP_FIRST,
@@ -603,8 +603,8 @@ ManglingConfig* get_config_balanced() {
     };
 }
 
-ManglingConfig* get_config_fast() {
-    return &(ManglingConfig) {
+ManglingConfig get_config_fast() {
+    return (ManglingConfig) {
         .priority_level = PRIORITY_HIGH,
         .use_leetspeak = LEET_BASIC,
         .use_capitalization = CAP_FIRST,
@@ -618,18 +618,18 @@ ManglingConfig* get_config_fast() {
     };
 }
 
-ManglingConfig* da_getConfigMangling(int config) {
+ManglingConfig NEMESIS_getConfigMangling(int config) {
     switch (config) {
-        case DA_MANGLING_BALANCED : {return get_config_balanced(); break;}
-        case DA_MANGLING_AGGRESSIVE : {return get_config_aggressive(); break;}
+        case NEMESIS_MANGLING_BALANCED : {return get_config_balanced(); break;}
+        case NEMESIS_MANGLING_AGGRESSIVE : {return get_config_aggressive(); break;}
         default : {return get_config_fast(); break;}
 
     }
 }
-int da_get_iteration_of_mangling(int config) {
+int NEMESIS_get_iteration_of_mangling(int config) {
     switch (config) {
-        case DA_MANGLING_BALANCED : {return 222; break;}
-        case DA_MANGLING_AGGRESSIVE : {return 606; break;}
+        case NEMESIS_MANGLING_BALANCED : {return 222; break;}
+        case NEMESIS_MANGLING_AGGRESSIVE : {return 606; break;}
         default : {return 905; break;}
 
     }
@@ -672,7 +672,7 @@ int da_get_iteration_of_mangling(int config) {
     init_global_sha();
     for (int i=0;i<nb;i++)generate_mangled_words(test_word, conf);
     free_global_sha();
-    printf("Variations: %lu\n", da_hash_get_count());
+    printf("Variations: %lu\n", NEMESIS_hash_get_count());
     //for (int i = 0; i < variations.count; i++) {
       //  printf("%3d. %s\n", i+1, variations.words[i]);
     //}

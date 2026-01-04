@@ -19,7 +19,7 @@ static char *strdup_safe(const char *s) {
     return p;
 }
 
-struct da_shadow_entry *fail_cleanup(struct da_shadow_entry *entry, char *line_copy) {
+struct NEMESIS_shadow_entry *fail_cleanup(struct NEMESIS_shadow_entry *entry, char *line_copy) {
     if (entry) {
         if (entry->username) free(entry->username);
         if (entry->salt) free(entry->salt);
@@ -27,7 +27,6 @@ struct da_shadow_entry *fail_cleanup(struct da_shadow_entry *entry, char *line_c
         free(entry);
     }
     if (line_copy) free(line_copy);
-    printf("debug erreur lors du parsing d'une shadow entry");
     return NULL;
 }
 
@@ -39,24 +38,21 @@ struct da_shadow_entry *fail_cleanup(struct da_shadow_entry *entry, char *line_c
  * renvoie l'adresse memoire de la structure rempli.
  * ps : le type d'algo est un enum dans le fichier Shadow.h
 */
-struct da_shadow_entry *da_parse_shadow_line(const char *line) {
+struct NEMESIS_shadow_entry *NEMESIS_parse_shadow_line(const char *line) {
     if (!line) return NULL;
     char *line_copy = strdup_safe(line);
     if (!line_copy) return NULL;
-    printf("apres le 2 eme if\n");
 
-    struct da_shadow_entry *entry = malloc(sizeof(struct da_shadow_entry));
+    struct NEMESIS_shadow_entry *entry = malloc(sizeof(struct NEMESIS_shadow_entry));
     if (!entry) return fail_cleanup(NULL, line_copy);
 
     entry->salt = NULL;
     entry->hash = NULL;
-    printf("apres le 3 eme if\n");
 
     char *token = strtok(line_copy, ":");
     if (!token) return fail_cleanup(entry, line_copy);
     entry->username = strdup_safe(token);
     if (!entry->username) return fail_cleanup(entry, line_copy);
-    printf("apres le 4 eme if\n");
 
     token = strtok(NULL, ":");
     if (!token) return fail_cleanup(entry, line_copy);
@@ -71,20 +67,15 @@ struct da_shadow_entry *da_parse_shadow_line(const char *line) {
     char *algo_str = strtok(p, "$");
     char *salt     = strtok(NULL, "$");
     char *hashval  = strtok(NULL, "$");
-    printf("apres le 5 eme if\n");
-    printf("algo : %s\n",algo_str);
-    printf("salt : %s\n",salt);
-    printf("hash : %s\n",hashval);
     if (!algo_str || !salt || !hashval) {
         free(hash_copy);
         return fail_cleanup(entry, line_copy);
     }
-    da_hash_algo_t algo = getAlgo(algo_str);
+    NEMESIS_hash_algo_t algo = getAlgo(algo_str);
     if (!isAlgoImplemented(algo)) {
         free(hash_copy);
         return fail_cleanup(entry, line_copy);
     }
-    printf("apres le 6 eme if\n");
 
     char tmp[256];
     snprintf(tmp, sizeof(tmp), "$%s$%s$", algo_str, salt);
@@ -99,8 +90,8 @@ struct da_shadow_entry *da_parse_shadow_line(const char *line) {
     return entry;
 }
 
-da_hash_algo_t getAlgo(char *str) {
-    if (!str) return DA_HASH_UNKNOWN;
+NEMESIS_hash_algo_t getAlgo(char *str) {
+    if (!str) return NEMESIS_HASH_UNKNOWN;
 
     const char *md5_prefix      = "1";
     const char *sha256_prefix   = "5";
@@ -113,42 +104,71 @@ da_hash_algo_t getAlgo(char *str) {
     const char *argon2id_prefix = "argon2id";
 
     if (strcmp(str, md5_prefix) == 0) {
-        return DA_HASH_MD5;
+        return NEMESIS_HASH_MD5;
     } else if (strcmp(str, sha256_prefix) == 0) {
-        return DA_HASH_SHA256;
+        return NEMESIS_HASH_SHA256;
     } else if (strcmp(str, sha512_prefix) == 0) {
-        return DA_HASH_SHA512;
+        return NEMESIS_HASH_SHA512;
     } else if (strcmp(str, yescrypt_prefix) == 0) {
-        return DA_HASH_YESCRYPT;
+        return NEMESIS_HASH_YESCRYPT;
     } else if (strcmp(str, bcrypt2a_prefix) == 0 ||
                strcmp(str, bcrypt2b_prefix) == 0 ||
                strcmp(str, bcrypt2y_prefix) == 0) {
-        return DA_HASH_BCRYPT;
+        return NEMESIS_HASH_BCRYPT;
                } else if (strcmp(str, argon2i_prefix) == 0) {
-                   return DA_HASH_ARGON2I;
+                   return NEMESIS_HASH_ARGON2I;
                } else if (strcmp(str, argon2id_prefix) == 0) {
-                   return DA_HASH_ARGON2ID;
+                   return NEMESIS_HASH_ARGON2ID;
                }
 
-    return DA_HASH_UNKNOWN;
+    return NEMESIS_HASH_UNKNOWN;
+}
+
+const char* getAlgoString(NEMESIS_hash_algo_t algo) {
+    switch (algo) {
+        case NEMESIS_HASH_MD5:
+            return "MD5";
+
+        case NEMESIS_HASH_SHA256:
+            return "SHA-256";
+
+        case NEMESIS_HASH_SHA512:
+            return "SHA-512";
+
+        case NEMESIS_HASH_YESCRYPT:
+            return "yescrypt";
+
+        case NEMESIS_HASH_BCRYPT:
+            return "bcrypt";
+
+        case NEMESIS_HASH_ARGON2I:
+            return "Argon2i";
+
+        case NEMESIS_HASH_ARGON2ID:
+            return "Argon2id";
+
+        case NEMESIS_HASH_UNKNOWN:
+        default:
+            return "Unknown";
+    }
 }
 
 
-bool isAlgoImplemented(da_hash_algo_t algo) {
+bool isAlgoImplemented(NEMESIS_hash_algo_t algo) {
     switch(algo) {
-        case DA_HASH_MD5:
+        case NEMESIS_HASH_MD5:
             return ENABLE_MD5;
-        case DA_HASH_SHA256:
+        case NEMESIS_HASH_SHA256:
             return ENABLE_SHA256;
-        case DA_HASH_SHA512:
+        case NEMESIS_HASH_SHA512:
             return ENABLE_SHA512;
-        case DA_HASH_BCRYPT:
+        case NEMESIS_HASH_BCRYPT:
             return ENABLE_BCRYPT;
-        case DA_HASH_YESCRYPT:
+        case NEMESIS_HASH_YESCRYPT:
             return ENABLE_YESCRYPT;
-        case DA_HASH_ARGON2I:
+        case NEMESIS_HASH_ARGON2I:
             return ENABLE_ARGON2I;
-        case DA_HASH_ARGON2ID:
+        case NEMESIS_HASH_ARGON2ID:
             return ENABLE_ARGON2ID;
         default:
             return 0;
@@ -161,7 +181,7 @@ bool isAlgoImplemented(da_hash_algo_t algo) {
  * libere la structure passer en parametre.
  * return : void.
 */
-void da_free_shadow_entry(struct da_shadow_entry *to_free){
+void NEMESIS_free_shadow_entry(struct NEMESIS_shadow_entry *to_free){
     if (!to_free) return;
     if (to_free->username) free(to_free->username);
     if (to_free->salt) free(to_free->salt);

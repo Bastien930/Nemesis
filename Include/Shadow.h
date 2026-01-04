@@ -3,8 +3,8 @@
 //
 
 
-#ifndef DA_SHADOW_H
-#define DA_SHADOW_H
+#ifndef NEMESIS_SHADOW_H
+#define NEMESIS_SHADOW_H
 
 #define ENABLE_MD5       true
 #define ENABLE_SHA256    true
@@ -17,34 +17,35 @@
 
 /* Algorithme du hash */
 typedef enum {
-    DA_HASH_UNKNOWN = 0,
-    DA_HASH_MD5,
-    DA_HASH_SHA256,
-    DA_HASH_SHA512,
-    DA_HASH_YESCRYPT,
-    DA_HASH_BCRYPT,
-    DA_HASH_ARGON2I,
-    DA_HASH_ARGON2ID
-} da_hash_algo_t;
+    NEMESIS_HASH_UNKNOWN = 0,
+    NEMESIS_HASH_MD5,
+    NEMESIS_HASH_SHA256,
+    NEMESIS_HASH_SHA512,
+    NEMESIS_HASH_YESCRYPT,
+    NEMESIS_HASH_BCRYPT,
+    NEMESIS_HASH_ARGON2I,
+    NEMESIS_HASH_ARGON2ID
+} NEMESIS_hash_algo_t;
 
 
 
 /* Entrée shadow simplifiée */
-struct da_shadow_entry {
+struct NEMESIS_shadow_entry {
     char *username;  /* username (malloc) */
     char *hash;      /* hash complet (malloc) */
     char *salt;      /* salt extrait (malloc) */
-    da_hash_algo_t algo; /* algorithme utilisé */
+    NEMESIS_hash_algo_t algo; /* algorithme utilisé */
 };
 
-bool isAlgoImplemented(da_hash_algo_t algo) ;
+bool isAlgoImplemented(NEMESIS_hash_algo_t algo) ;
 
-da_hash_algo_t getAlgo(char *str) ;
+NEMESIS_hash_algo_t getAlgo(char *str) ;
 
+const char* getAlgoString(NEMESIS_hash_algo_t algo) ;
 /* Libération mémoire */
-void da_free_shadow_entry(struct da_shadow_entry *to_free);
+void NEMESIS_free_shadow_entry(struct NEMESIS_shadow_entry *to_free);
 
 /* Parse ligne shadow et retourne une struct remplie */
-struct da_shadow_entry *da_parse_shadow_line(const char *line);
+struct NEMESIS_shadow_entry *NEMESIS_parse_shadow_line(const char *line);
 
-#endif /* DA_SHADOW_H */
+#endif /* NEMESIS_SHADOW_H */

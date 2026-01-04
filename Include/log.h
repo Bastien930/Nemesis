@@ -2,8 +2,8 @@
 // Created by Basti on 26/11/2025.
 //
 
-#ifndef DA_LOG_H
-#define DA_LOG_H
+#ifndef NEMESIS_LOG_H
+#define NEMESIS_LOG_H
 
 
 #include <stdio.h>
@@ -22,7 +22,7 @@ typedef struct {
     int log_level;
 } LogConfig;
 
-extern LogConfig* da_log_config;
+extern LogConfig* NEMESIS_log_config;
 
 
 void write_log(LogLevel level, const char *message,const char *location) ;
@@ -49,4 +49,4 @@ int main() {
 }*/
 
 
-#endif //DA_LOG_H
+#endif //NEMESIS_LOG_H

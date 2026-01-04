@@ -2,8 +2,8 @@
 // Created by bastien on 10/24/25.
 //
 
-#ifndef DA_OPTION_H
-#define DA_OPTION_H
+#ifndef NEMESIS_OPTION_H
+#define NEMESIS_OPTION_H
 
 #include <getopt.h>
 
@@ -46,6 +46,6 @@ static struct option long_options[] = {
     {0, 0, 0, 0}
 };
 
-int parse_args(int argc,char *argv[], da_config_t *cfg);
+int parse_args(int argc,char *argv[], NEMESIS_config_t *cfg);
 
-#endif //DA_OPTION_H
+#endif //NEMESIS_OPTION_H

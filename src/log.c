@@ -6,17 +6,23 @@
 #include <string.h>
 #include <time.h>
 
+#include "Config.h"
+#include "Utils.h"
+
 LogConfig * log_config = NULL;
 
 int init_log(const char *filename, int level) { // le level correspond au level initial.
     log_config = malloc(sizeof(LogConfig));
     if (!log_config) { perror("allocation dynamique de init_log"); return -1; }
-    log_config->file = fopen(filename, "a");
+    char fullpath[NEMESIS_MAX_PATH];
+    PATH_JOIN(fullpath,NEMESIS_MAX_PATH,NEMESIS_config.output.log_dir,filename);
+    printf("log enregistrer à l'emplacement : %s\n",fullpath);
+    log_config->file = fopen(fullpath, "a");
     if (!log_config->file) { perror("Erreur lors de l'ouverture du fichier de log"); return -1; }
     strncpy(log_config->filename, filename, sizeof(log_config->filename) - 1);
     log_config->filename[sizeof(log_config->filename) - 1] = '\0';
     log_config->log_level = level;
-    return 0;
+    return 1;
 }
 
 void write_log(LogLevel level, const char *message, const char *location) {

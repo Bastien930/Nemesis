@@ -13,11 +13,12 @@
 #include <stdlib.h>
 
 #include "brute_force.h"
+#include "Dictionnary.h"
 #include "log.h"
 #include "Utils.h"
 
 
-void da_config_init_default(da_config_t *cfg){
+void NEMESIS_config_init_default(NEMESIS_config_t *cfg){
     if (!cfg) return;
     memset(cfg, 0, sizeof(*cfg));
     cfg->input.shadow_file[0] = '\0';
@@ -25,26 +26,26 @@ void da_config_init_default(da_config_t *cfg){
     cfg->input.save= 0;
 
     cfg->attack.enable_dictionary = false;
-    cfg->attack.enable_bruteforce = true;
+    cfg->attack.enable_bruteforce = false;
     cfg->attack.enable_mangling = false;
-    cfg->attack.mangling_config = DA_MANGLING_FAST;
-    cfg->attack.charset_preset = DA_CHARSET_PRESET_DEFAULT;
+    cfg->attack.mangling_config = NEMESIS_MANGLING_FAST;
+    cfg->attack.charset_preset = NEMESIS_CHARSET_PRESET_DEFAULT;
     cfg->attack.charset_custom[0] = '\0';
-    cfg->attack.min_len = DA_MIN_LEN ;
-    cfg->attack.max_len = DA_MAX_LEN ;
-    cfg->attack.max_attempts = DA_MAX_ATTEMPTS ;
+    cfg->attack.min_len = NEMESIS_MIN_LEN ;
+    cfg->attack.max_len = NEMESIS_MAX_LEN ;
+    cfg->attack.max_attempts = NEMESIS_MAX_ATTEMPTS ;
 
     strcpy(cfg->output.output_file, "output.txt");
-    cfg->output.format = DA_OUT_TXT ;
+    cfg->output.format = NEMESIS_OUT_TXT ;
     cfg->output.enable_logging = true ;
     strcpy(cfg->output.log_file, "log.da");
 
     cfg->system.threads = 16 ;
     cfg->system.enable_gpu = false ;
 
-    cfg->meta.version = DA_VERSION ;
-    cfg->meta.build_date = DA_BUILD_DATE ;
-    cfg->meta.author = DA_AUTHOR ;
+    cfg->meta.version = NEMESIS_VERSION ;
+    cfg->meta.build_date = NEMESIS_BUILD_DATE ;
+    cfg->meta.author = NEMESIS_AUTHOR ;
 
     //cfg->show_help = false ;
 
@@ -60,7 +61,7 @@ void da_config_init_default(da_config_t *cfg){
   -6   = invalid threads value
   -7   = logging enabled but no log file
 */
-int da_config_validate(const da_config_t *cfg, char *errbuf, size_t errlen) {
+int NEMESIS_config_validate(const NEMESIS_config_t *cfg, char *errbuf, size_t errlen) {
     if (!cfg) {
         if (errbuf && errlen) snprintf(errbuf, errlen, "config is NULL");
         return -1;
@@ -109,8 +110,8 @@ int da_config_validate(const da_config_t *cfg, char *errbuf, size_t errlen) {
     }
 
     /* min/max length checks */
-    if (cfg->attack.min_len < DA_MIN_LEN || cfg->attack.max_len < DA_MIN_LEN) {
-        if (errbuf && errlen) snprintf(errbuf, errlen, "min/max must be >= %d", DA_MIN_LEN);
+    if (cfg->attack.min_len < NEMESIS_MIN_LEN || cfg->attack.max_len < NEMESIS_MIN_LEN) {
+        if (errbuf && errlen) snprintf(errbuf, errlen, "min/max must be >= %d", NEMESIS_MIN_LEN);
         return -5;
     }
     if (cfg->attack.min_len > cfg->attack.max_len) {
@@ -118,10 +119,10 @@ int da_config_validate(const da_config_t *cfg, char *errbuf, size_t errlen) {
                                         cfg->attack.min_len, cfg->attack.max_len);
         return -5;
     }
-    if (cfg->attack.max_len > DA_MAX_LEN) {
+    if (cfg->attack.max_len > NEMESIS_MAX_LEN) {
         if (errbuf && errlen) snprintf(errbuf, errlen,
                                         "max_len (%d) too large (limit %d)",
-                                        cfg->attack.max_len, DA_MAX_LEN);
+                                        cfg->attack.max_len, NEMESIS_MAX_LEN);
         return -5;
     }
 
@@ -136,9 +137,9 @@ int da_config_validate(const da_config_t *cfg, char *errbuf, size_t errlen) {
         if (errbuf && errlen) snprintf(errbuf, errlen, "threads must be >= 1");
         return -6;
     }
-    if (cfg->system.threads > DA_MAX_THREADS) {
+    if (cfg->system.threads > NEMESIS_MAX_THREADS) {
         if (errbuf && errlen) snprintf(errbuf, errlen, "threads (%u) exceeds compile-time limit (%d)",
-                                        cfg->system.threads, DA_MAX_THREADS);
+                                        cfg->system.threads, NEMESIS_MAX_THREADS);
         return -6;
     }
 
@@ -157,10 +158,10 @@ int da_config_validate(const da_config_t *cfg, char *errbuf, size_t errlen) {
  * progname = argv[0].
  * cette fonction est appeler si on detecte l'option -h ou --help peut import les autres options.
 */
-void da_print_usage(const char *progname) {
-    if (!progname) progname = "da_tool";
+void NEMESIS_print_usage(const char *progname) {
+    if (!progname) progname = "NEMESIS_tool";
 
-    printf("%s %s — utilitaire d'analyse de shadow / dictionary attacks (usage sécurisé)\n\n", progname, DA_VERSION);
+    printf("%s %d — utilitaire d'analyse de shadow / dictionary attacks (usage sécurisé)\n\n", progname, NEMESIS_VERSION);
     printf("Usage: %s [options]\n\n", progname);
 
     puts("Options (principales) :");
@@ -173,8 +174,8 @@ void da_print_usage(const char *progname) {
     puts("  -b, --bruteforce           Activer le mode bruteforce (optionnel).");
     puts("  -c, --charset <preset|chars> Charset prédéfini ou liste explicite de caractères.");
     puts("                             presets: default, alphanum, numeric, <custom>");
-    puts("      --min <n>              Longueur minimale pour génération brutforce (défaut : " STR(DA_MIN_LEN) ").");
-    puts("      --max <n>              Longueur maximale pour génération brutforce (défaut : " STR(DA_MAX_LEN) ").");
+    puts("      --min <n>              Longueur minimale pour génération brutforce (défaut : " STR(NEMESIS_MIN_LEN) ").");
+    puts("      --max <n>              Longueur maximale pour génération brutforce (défaut : " STR(NEMESIS_MAX_LEN) ").");
     puts("  -t, --threads <n>          Nombre de threads (défaut : 1).");
     puts("  -o, --output <file>        Fichier de sortie (JSON/CSV/TXT selon extension).");
     puts("      --format <json|csv|txt> Forcer le format de sortie (TXT si omis).");
@@ -185,9 +186,9 @@ void da_print_usage(const char *progname) {
     puts("");
 
     printf("Limites / valeurs par défaut compilées :\n");
-    printf("  DA_MAX_PATH = %d, DA_MAX_THREADS = %d, DA_MIN_LEN = %d, DA_MAX_LEN = %d\n",
-           DA_MAX_PATH, DA_MAX_THREADS, DA_MIN_LEN, DA_MAX_LEN);
-    printf("  DA_MAX_ALLOWED_LEN = %d, DA_MAX_ATTEMPTS = %d\n", DA_MAX_LEN, DA_MAX_ATTEMPTS);
+    printf("  NEMESIS_MAX_PATH = %d, NEMESIS_MAX_THREADS = %d, NEMESIS_MIN_LEN = %d, NEMESIS_MAX_LEN = %d\n",
+           NEMESIS_MAX_PATH, NEMESIS_MAX_THREADS, NEMESIS_MIN_LEN, NEMESIS_MAX_LEN);
+    printf("  NEMESIS_MAX_ALLOWED_LEN = %d, NEMESIS_MAX_ATTEMPTS = %d\n", NEMESIS_MAX_LEN, NEMESIS_MAX_ATTEMPTS);
     puts("");
 
     puts("Exemples :");
@@ -200,22 +201,23 @@ void da_print_usage(const char *progname) {
     puts("  - Par défaut, l'export complet des hashes est désactivé ; activez-le explicitement si nécessaire.");
     puts("  - Préférez le mode simulation avant de lancer des opérations réelles.");
     puts("");
+    fflush(stdout);
 }
 #include "Config.h"
 #include <string.h>
 #include <zlib.h>
 
-int da_save_config(FILE *file, da_config_t *config) {
+int NEMESIS_save_config(FILE *file, NEMESIS_config_t *config) {
     if (!file || !config) return -1;
 
-    struct da_config_file config_file;
+    struct NEMESIS_config_file config_file;
 
     // Initialiser à zéro pour éviter les données non initialisées
     memset(&config_file, 0, sizeof(config_file));
 
     // En-tête
-    config_file.magic = DA_CONFIG_MAGIC;
-    config_file.version = DA_VERSION;
+    config_file.magic = NEMESIS_CONFIG_MAGIC;
+    config_file.version = NEMESIS_VERSION;
 
     // Copier les structures (qui ne contiennent QUE des tableaux, pas de pointeurs)
     config_file.input = config->input;
@@ -241,13 +243,13 @@ int da_save_config(FILE *file, da_config_t *config) {
     return 0;
 }
 
-int da_load_config(da_config_t *config) {
-    char full_path[DA_MAX_PATH];
-    snprintf(full_path, sizeof(full_path), "%s%s", SavePath, DA_STOPPED_FILE);
-    FILE *file = fopen(DA_STOPPED_FILE, "rb");
+int NEMESIS_load_config(NEMESIS_config_t *config) {
+    char full_path[NEMESIS_MAX_PATH];
+    PATH_JOIN(full_path,NEMESIS_MAX_PATH,NEMESIS_config.output.config_dir,NEMESIS_STOPPED_FILE);
+    FILE *file = fopen(full_path, "rb");
     if (!file || !config) return -1;
 
-    struct da_config_file config_file;
+    struct NEMESIS_config_file config_file;
 
     // Lire la structure complète
     if (fread(&config_file, sizeof(config_file), 1, file) != 1) {
@@ -258,16 +260,16 @@ int da_load_config(da_config_t *config) {
     fclose(file);
 
     // Vérifier le magic number
-    if (config_file.magic != DA_CONFIG_MAGIC) {
+    if (config_file.magic != NEMESIS_CONFIG_MAGIC) {
         fprintf(stderr, "Erreur: Magic number invalide (0x%X au lieu de 0x%X)\n",
-                config_file.magic, DA_CONFIG_MAGIC);
+                config_file.magic, NEMESIS_CONFIG_MAGIC);
         return -1;
     }
 
     // Vérifier la version
-    if (config_file.version != DA_VERSION) {
+    if (config_file.version != NEMESIS_VERSION) {
         fprintf(stderr, "Erreur: Version incompatible (%u au lieu de %u)\n",
-                config_file.version, DA_VERSION);
+                config_file.version, NEMESIS_VERSION);
         return -1;
     }
 
@@ -296,57 +298,58 @@ int da_load_config(da_config_t *config) {
 
 
     // Restaurer les pointeurs constants de meta (pas sauvegardés)
-    config->meta.build_date = DA_BUILD_DATE;
-    config->meta.author = DA_AUTHOR;
+    config->meta.build_date = NEMESIS_BUILD_DATE;
+    config->meta.author = NEMESIS_AUTHOR;
 
     return 0;
 }
 
-void da_safe_save_config(void) {
+void NEMESIS_safe_save_config(void) {
     // Vérifier si un fichier existe déjà
-    if (File_exist(DA_STOPPED_FILE)) {
+    char full_path[NEMESIS_MAX_PATH];
+    PATH_JOIN(full_path,NEMESIS_MAX_PATH,NEMESIS_config.output.config_dir,NEMESIS_STOPPED_FILE);
+    if (File_exist(full_path)) {
         char res[64];
-        printf("Une configuration existe déjà, l'écraser ? (Y/N) : ");
+        print_slow("Une configuration existe déjà, l'écraser ? (Y/N) : ",SPEED_PRINT);
         fflush(stdout);
 
         if (fgets(res, sizeof(res), stdin) == NULL) return;
 
         if (res[0] != 'Y' && res[0] != 'y') {
-            printf("Sauvegarde annulée.\n");
+            print_slow("Sauvegarde annulée.\n",SPEED_PRINT);
 
             return;
         }
     }
 
-    save_thread_states();
-    char full_path[DA_MAX_PATH];
-    snprintf(full_path, sizeof(full_path), "%s/%s", SavePath, DA_STOPPED_FILE);
-    FILE *f = fopen(DA_STOPPED_FILE, "wb");
+    if (NEMESIS_config.attack.enable_bruteforce) {save_brute_thread_states();delete_dict_thread_states();}
+    else {save_dict_thread_states();delete_brut_thread_states();}
+    FILE *f = fopen(full_path, "wb");
     if (!f) {
         perror("Impossible d'ouvrir le fichier de sauvegarde");
         return;
     }
 
-    if (da_save_config(f, &da_config) != 0) {
+    if (NEMESIS_save_config(f, &NEMESIS_config) != 0) {
         fprintf(stderr, "Erreur lors de la sauvegarde de la configuration\n");
         return;
     }
 
-    printf("Configuration sauvegardée dans '%s'\n", DA_STOPPED_FILE);
+    PRINT_SLOW_MACRO(SPEED_PRINT,"Configuration sauvegardée dans '%s'\n", NEMESIS_STOPPED_FILE);
 }
 
-/*int da_save_config(FILE *file,da_config_t *config) {
+/*int NEMESIS_save_config(FILE *file,NEMESIS_config_t *config) {
     if (!file || !config) return -1;
 
-    struct da_config_file config_file;
+    struct NEMESIS_config_file config_file;
 
-    config_file.magic   = DA_CONFIG_MAGIC;
-    config_file.version = DA_VERSION;
-    config_file.da_config = *config;
+    config_file.magic   = NEMESIS_CONFIG_MAGIC;
+    config_file.version = NEMESIS_VERSION;
+    config_file.NEMESIS_config = *config;
 
-    printf("Da_config : %s\n",config_file.da_config.input.shadow_file);
+    printf("NEMESIS_config : %s\n",config_file.NEMESIS_config.input.shadow_file);
     uLong checksum = crc32(0uL, Z_NULL, 0);
-    checksum = crc32(checksum,(const Bytef *)&config_file.da_config,sizeof(da_config_t));
+    checksum = crc32(checksum,(const Bytef *)&config_file.NEMESIS_config,sizeof(NEMESIS_config_t));
 
     config_file.checksum = checksum;
 
@@ -358,23 +361,23 @@ void da_safe_save_config(void) {
 }*/
 
 
-/*int da_load_config(FILE *file,da_config_t *config) { // la fonctrion appelante devra ouvrir le fichier
+/*int NEMESIS_load_config(FILE *file,NEMESIS_config_t *config) { // la fonctrion appelante devra ouvrir le fichier
 
     if (!file || !config) return -1;
 
-    struct da_config_file config_file;
+    struct NEMESIS_config_file config_file;
     fread(&config_file, sizeof(config_file), 1, file);
     fclose(file);
 
-    if (config_file.magic!=DA_CONFIG_MAGIC)return -1;
-    if (config_file.version!=DA_VERSION)return -1;
+    if (config_file.magic!=NEMESIS_CONFIG_MAGIC)return -1;
+    if (config_file.version!=NEMESIS_VERSION)return -1;
 
     uLong checksum = crc32(0uL,Z_NULL,0);
-    checksum = crc32(checksum,(const Bytef *)&config_file.da_config,sizeof(da_config_t));
+    checksum = crc32(checksum,(const Bytef *)&config_file.NEMESIS_config,sizeof(NEMESIS_config_t));
 
     if (checksum!=config_file.checksum)return -1;
 
-    *config = config_file.da_config;
+    *config = config_file.NEMESIS_config;
     return 0;
 
 }*/

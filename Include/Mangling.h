@@ -2,8 +2,8 @@
 // Created by Basti on 10/11/2025.
 //
 
-#ifndef DA_MANGLING_H
-#define DA_MANGLING_H
+#ifndef NEMESIS_MANGLING_H
+#define NEMESIS_MANGLING_H
 
 // mangling.
 
@@ -24,10 +24,10 @@ typedef struct {
 void generate_mangled_words(const char *base_word, ManglingConfig *config);
 void print_usage_example(int nb) ;
 
-ManglingConfig* get_config_aggressive() ;
-ManglingConfig* get_config_balanced() ;
-ManglingConfig* get_config_fast() ;
-ManglingConfig* da_getConfigMangling(int config) ;
+ManglingConfig get_config_aggressive() ;
+ManglingConfig get_config_balanced() ;
+ManglingConfig get_config_fast() ;
+ManglingConfig NEMESIS_getConfigMangling(int config) ;
 
 
-#endif //DA_MANGLING_H
+#endif //NEMESIS_MANGLING_H

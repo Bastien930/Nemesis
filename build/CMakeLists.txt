@@ -30,6 +30,8 @@ add_executable(Nemesis
         ../src/log.c
         ../src/hashSet.c
         ../Include/hashSet.h
+        ../src/Dictionnary.c
+        ../Include/Dictionnary.h
 )
 
 target_link_libraries(Nemesis crypto) #pour open/ssl
@@ -53,3 +55,27 @@ set(CMAKE_EXE_LINKER_FLAGS_RELEASE "")
 
 
 message(STATUS "Build: ${CMAKE_BUILD_TYPE} | Flags: ${CMAKE_C_FLAGS_RELEASE}")
+
+
+set_target_properties(Nemesis PROPERTIES
+        OUTPUT_NAME nemesis
+)
+
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "/usr/local" CACHE PATH "Install prefix" FORCE)
+endif()
+
+# Installation de l'exécutable
+install(TARGETS Nemesis
+        RUNTIME DESTINATION bin
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+        GROUP_READ GROUP_EXECUTE
+        WORLD_READ WORLD_EXECUTE
+)
+
+# Message après installation
+install(CODE "
+    message(STATUS \"======================================\")
+    message(STATUS \"Nemesis installé : ${CMAKE_INSTALL_PREFIX}/bin/nemesis\")
+    message(STATUS \"======================================\")
+")

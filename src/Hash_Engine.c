@@ -17,16 +17,16 @@
 #include "log.h"
 
 /* === Définition des globals === */
-const char *da_hash = NULL;
-const char *da_salt = NULL;
-long da_hash_count = 0;
-//da_hash_compare_fn da_compare_fn = NULL;
+const char *NEMESIS_hash = NULL;
+const char *NEMESIS_salt = NULL;
+long NEMESIS_hash_count = 0;
+//NEMESIS_hash_compare_fn NEMESIS_compare_fn = NULL;
 
 /* stockage binaire du hash cible / salt */
-//static unsigned char *da_hash_bin = NULL;
-static size_t da_hash_len = 0;
-//static unsigned char *da_salt_bin = NULL;
-static size_t da_salt_len = 0;
+//static unsigned char *NEMESIS_hash_bin = NULL;
+static size_t NEMESIS_hash_len = 0;
+//static unsigned char *NEMESIS_salt_bin = NULL;
+static size_t NEMESIS_salt_len = 0;
 
 static inline int fast_eq_memcmp(const void *a, const void *b, size_t len) {
     if (len == 0) return 1;
@@ -144,16 +144,16 @@ static int evp_hash(const EVP_MD *md,
 
 /* === Fonctions de hash concrètes (une par algo) === */
 
-bool da_crypt(const char *password) {
+bool NEMESIS_crypt(const char *password) {
     struct crypt_data data;
     data.initialized = 0;
-    char *crypt_res = crypt_r(password, da_salt,&data);
-    if (!crypt_res) {char buffer[512];safe_concat(buffer,512,"Erreur lors de crypt pour le mot de passe : ",password);write_log(LOG_WARNING,buffer,"da_crypt"); return false;}
+    char *crypt_res = crypt_r(password, NEMESIS_salt,&data);
+    if (!crypt_res) {char buffer[512];safe_concat(buffer,512,"Erreur lors de crypt pour le mot de passe : ",password);write_log(LOG_WARNING,buffer,"NEMESIS_crypt"); return false;}
     /* 2) extraire la partie hash encodée (dernier champ après $) */
     const char *enc_hash = extract_crypt_hash_part(crypt_res);
 
-    if (strlen(enc_hash) != da_hash_len) return false;
-    return fast_eq_memcmp(enc_hash,da_hash,da_hash_len);
+    if (strlen(enc_hash) != NEMESIS_hash_len) return false;
+    return fast_eq_memcmp(enc_hash,NEMESIS_hash,NEMESIS_hash_len);
 }
 
 /* SHA256 */
@@ -161,7 +161,7 @@ bool da_crypt(const char *password) {
 static bool sha256_compare_fn(const char *password) {
     unsigned char buf[256];
     size_t pwlen = strlen(password);
-    size_t total = da_salt_len + pwlen;
+    size_t total = NEMESIS_salt_len + pwlen;
     unsigned char *input = buf;
 
     if (total > sizeof(buf)) {
@@ -170,13 +170,13 @@ static bool sha256_compare_fn(const char *password) {
     }
 
     // Copie salt+password
-    if (da_salt_len) memcpy(input, da_salt_bin, da_salt_len);
-    memcpy(input + da_salt_len, password, pwlen);
+    if (NEMESIS_salt_len) memcpy(input, NEMESIS_salt_bin, NEMESIS_salt_len);
+    memcpy(input + NEMESIS_salt_len, password, pwlen);
 
     // Au lieu de : salt + password
 
-    //if (da_salt_len) memcpy(input, password, pwlen);
-    //memcpy(input + pwlen, da_salt_bin, da_salt_len);
+    //if (NEMESIS_salt_len) memcpy(input, password, pwlen);
+    //memcpy(input + pwlen, NEMESIS_salt_bin, NEMESIS_salt_len);
 
     // Hash
     unsigned char digest[EVP_MAX_MD_SIZE];
@@ -187,7 +187,7 @@ static bool sha256_compare_fn(const char *password) {
 
     // Vérifications
     if (ret != 0) return false;          // ← IMPORTANT : vérifie que evp_hash a réussi
-    if (dlen != da_hash_len) return false;
+    if (dlen != NEMESIS_hash_len) return false;
 
     // Debug (à retirer en prod)
     if (strcmp(password, "Password123") == 0) {
@@ -195,11 +195,11 @@ static bool sha256_compare_fn(const char *password) {
         printf("  Computed: ");
         for (size_t i = 0; i < dlen; i++) printf("%02x", digest[i]);
         printf("\n  Expected: ");
-        for (size_t i = 0; i < da_hash_len; i++) printf("%02x", da_hash[i]);
-        printf("\n  Result: %d\n", fast_eq_memcmp(digest, da_hash_bin, dlen));
+        for (size_t i = 0; i < NEMESIS_hash_len; i++) printf("%02x", NEMESIS_hash[i]);
+        printf("\n  Result: %d\n", fast_eq_memcmp(digest, NEMESIS_hash_bin, dlen));
     }
 
-    return fast_eq_memcmp(digest, da_hash_bin, dlen);
+    return fast_eq_memcmp(digest, NEMESIS_hash_bin, dlen);
 }
 */
 /* SHA512 */
@@ -207,24 +207,24 @@ static bool sha256_compare_fn(const char *password) {
 static bool sha512_compare_fn(const char *password) {
     unsigned char buf[512];
     size_t pwlen = strlen(password);
-    size_t total = da_salt_len + pwlen;
+    size_t total = NEMESIS_salt_len + pwlen;
     unsigned char *input = buf;
 
     if (total > sizeof(buf)) {
         input = malloc(total);
         if (!input) return false;
     }
-    if (da_salt_len) memcpy(input, da_salt_bin, da_salt_len);
-    memcpy(input + da_salt_len, password, pwlen);
+    if (NEMESIS_salt_len) memcpy(input, NEMESIS_salt_bin, NEMESIS_salt_len);
+    memcpy(input + NEMESIS_salt_len, password, pwlen);
 
     unsigned char digest[EVP_MAX_MD_SIZE];
     size_t dlen = 0;
     evp_hash(EVP_sha512(), input, total, digest, &dlen);
 
     if (input != buf) free(input);
-    if (dlen != da_hash_len) return false;
+    if (dlen != NEMESIS_hash_len) return false;
 
-    return fast_eq_memcmp(digest,da_hash_bin,dlen);
+    return fast_eq_memcmp(digest,NEMESIS_hash_bin,dlen);
 }
 
  MD5 (exemple)
@@ -232,23 +232,23 @@ static bool sha512_compare_fn(const char *password) {
 static bool md5_compare_fn(const char *password) {
     unsigned char buf[128];
     size_t pwlen = strlen(password);
-    size_t total = da_salt_len + pwlen;
+    size_t total = NEMESIS_salt_len + pwlen;
     unsigned char *input = buf;
     if (total > sizeof(buf)) {
         input = malloc(total);
         if (!input) return false;
     }
-    if (da_salt_len) memcpy(input, da_salt_bin, da_salt_len);
-    memcpy(input + da_salt_len, password, pwlen);
+    if (NEMESIS_salt_len) memcpy(input, NEMESIS_salt_bin, NEMESIS_salt_len);
+    memcpy(input + NEMESIS_salt_len, password, pwlen);
 
     unsigned char digest[EVP_MAX_MD_SIZE];
     size_t dlen = 0;
     evp_hash(EVP_md5(), input, total, digest, &dlen);
 
     if (input != buf) free(input);
-    if (dlen != da_hash_len) return false;
+    if (dlen != NEMESIS_hash_len) return false;
 
-    return fast_eq_memcmp(digest,da_hash_bin,dlen);
+    return fast_eq_memcmp(digest,NEMESIS_hash_bin,dlen);
 }
  fallback
 static bool unknown_compare_fn(const char *password) {
@@ -266,57 +266,57 @@ const char *extract_crypt_hash_part(const char *crypt_res) {
 }
 
 
-bool da_hash_engine_init(struct da_shadow_entry *entry) {
-    if (!entry) {write_log(LOG_ERROR,"Erreur aucune shadow entry impossible d'initilialiser le hash engine","da_hash_engine_init"); return false;}
+bool NEMESIS_hash_engine_init(struct NEMESIS_shadow_entry *entry) {
+    if (!entry) {write_log(LOG_ERROR,"Erreur aucune shadow entry impossible d'initilialiser le hash engine","NEMESIS_hash_engine_init"); return false;}
 
-    da_hash_engine_reset();
+    NEMESIS_hash_engine_reset();
 
-    //const da_hash_algo_t da_algo_hash = entry->algo;
-    da_hash = entry->hash;
-    da_salt = entry->salt;
-    da_hash_len = strlen(entry->hash);
-    da_salt_len = strlen(entry->salt);
+    //const NEMESIS_hash_algo_t NEMESIS_algo_hash = entry->algo;
+    NEMESIS_hash = entry->hash;
+    NEMESIS_salt = entry->salt;
+    NEMESIS_hash_len = strlen(entry->hash);
+    NEMESIS_salt_len = strlen(entry->salt);
 
     struct crypt_data warmup;
     memset(&warmup, 0, sizeof(warmup));
     crypt_r("warmup", "$5$abcd1234$", &warmup);
 
 
-    /*if (base64_to_bin(da_hash, &da_hash_bin, &da_hash_len) != 0) {
+    /*if (base64_to_bin(NEMESIS_hash, &NEMESIS_hash_bin, &NEMESIS_hash_len) != 0) {
         printf("erreur de conversion base64\n");
         return false;
     }
 
-    if (da_salt && hex_to_bin(da_salt, &da_salt_bin, &da_salt_len) != 0) {
-        free(da_hash_bin); da_hash_bin = NULL;
+    if (NEMESIS_salt && hex_to_bin(NEMESIS_salt, &NEMESIS_salt_bin, &NEMESIS_salt_len) != 0) {
+        free(NEMESIS_hash_bin); NEMESIS_hash_bin = NULL;
         printf("erreur lros de la conversion du salt \n");
         return false;
     }*/
 
-    /*switch (da_algo_hash) {
-        case DA_HASH_MD5:
-            da_compare_fn = md5_compare_fn;
+    /*switch (NEMESIS_algo_hash) {
+        case NEMESIS_HASH_MD5:
+            NEMESIS_compare_fn = md5_compare_fn;
             break;
-        case DA_HASH_SHA256:
-            da_compare_fn = sha256_compare_fn;
+        case NEMESIS_HASH_SHA256:
+            NEMESIS_compare_fn = sha256_compare_fn;
             break;
-        case DA_HASH_SHA512:
-            da_compare_fn = sha512_compare_fn;
+        case NEMESIS_HASH_SHA512:
+            NEMESIS_compare_fn = sha512_compare_fn;
             break;
         default:
-            da_compare_fn = unknown_compare_fn;
+            NEMESIS_compare_fn = unknown_compare_fn;
             break;
     }*/
 
     return true;
 }
 
-void da_hash_engine_reset(void) {
-    //if (da_hash_bin) { free(da_hash_bin); da_hash_bin = NULL; }
-    //if (da_salt_bin) { free(da_salt_bin); da_salt_bin = NULL; }
-    da_hash_len = da_salt_len = 0;
-    da_hash = NULL;
-    da_salt = NULL;
-    //da_compare_fn = NULL;
-    da_hash_count = 0;
+void NEMESIS_hash_engine_reset(void) {
+    //if (NEMESIS_hash_bin) { free(NEMESIS_hash_bin); NEMESIS_hash_bin = NULL; }
+    //if (NEMESIS_salt_bin) { free(NEMESIS_salt_bin); NEMESIS_salt_bin = NULL; }
+    NEMESIS_hash_len = NEMESIS_salt_len = 0;
+    NEMESIS_hash = NULL;
+    NEMESIS_salt = NULL;
+    //NEMESIS_compare_fn = NULL;
+    NEMESIS_hash_count = 0;
 }

@@ -2,8 +2,8 @@
 // Created by Basti on 27/11/2025.
 //
 
-#ifndef DA_HASHSET_H
-#define DA_HASHSET_H
+#ifndef NEMESIS_HASHSET_H
+#define NEMESIS_HASHSET_H
 
 #define HASHSET_SIZE 65536  // 2^16, ajustez selon vos besoins
 
@@ -23,4 +23,4 @@ int hashset_add(HashSet *hs,const char *str) ;
 void hashset_init(HashSet *hs) ;
 
 
-#endif //DA_HASHSET_H
+#endif //NEMESIS_HASHSET_H

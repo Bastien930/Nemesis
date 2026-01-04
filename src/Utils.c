@@ -13,6 +13,8 @@
 #include "Hash_Engine.h"
 #include "Config.h"
 #include <omp.h>
+#include <sys/stat.h>
+
 
 #include <stdio.h>
 #include <unistd.h> // pour usleep()
@@ -22,9 +24,10 @@
 
 #include <string.h>
 
+#include "log.h"
 #include "main.h"
 
-long da_iteration = 1;
+long NEMESIS_iteration = 1;
 
 clock_t start;
 clock_t end;
@@ -118,21 +121,296 @@ long count_iteration(int iteration) {
     ;
 }
 
-void show_result(struct da_shadow_entry* shadow_entry) {
-    char buff[MAX_WORD_LEN];
-    get_found_password(buff,MAX_WORD_LEN);
-    double temp_omp = end_omp-start_omp;
-    double temp_cpu = ((double)(end - start)) / CLOCKS_PER_SEC;
 
-    if (strlen(buff)==0) printf("aucune correspondance a été trouvé... pour l'utilisateur : %s\n",shadow_entry->username);
-    else printf("le password trouve est : %s pour l'utilisateur : %s\n",buff,shadow_entry->username);
-    printf("Le hash correpondant est : %s avec pour salt : %s\n",shadow_entry->hash,shadow_entry->salt);
-    printf("%lu mots de passe testé en : %.2f secondes\n", da_hash_get_count(),temp_omp);
-    printf("Temps réel écoulé : %.2f secondes\n", temp_omp);
-    printf("Temps CPU cumulé : %.2f secondes\n", temp_cpu);
-    printf("Débit réel : %.2f mots de passe/seconde\n", da_hash_get_count() / temp_omp);
-    printf("Ratio CPU/Temps réel : %.2fx\n\n", temp_cpu / temp_omp);
 
+
+
+
+/**
+ * Prépare les statistiques
+ */
+result_stats_t prepare_result_stats(void) {
+    result_stats_t stats = {0};
+
+    get_found_password(stats.password, MAX_WORD_LEN);
+    stats.time_omp = end_omp - start_omp;
+    stats.time_cpu = ((double)(end - start)) / CLOCKS_PER_SEC;
+    stats.password_count = NEMESIS_hash_get_count();
+    stats.found = (strlen(stats.password) > 0) ? 1 : 0;
+
+    // Calculs dérivés
+    if (stats.time_omp > 0) {
+        stats.throughput = stats.password_count / stats.time_omp;
+        stats.cpu_ratio = stats.time_cpu / stats.time_omp;
+    }
+
+    return stats;
+}
+
+/**
+ * Affiche les résultats à l'écran
+ */
+void show_result(struct NEMESIS_shadow_entry* shadow_entry, const result_stats_t* stats) {
+    if (!stats->found) {
+        PRINT_SLOW_MACRO(SPEED_PRINT, "Aucune correspondance trouvée pour : %s\n",shadow_entry->username);
+    } else {
+        PRINT_SLOW_MACRO(SPEED_PRINT, "Password trouvé : %s pour : %s\n",stats->password, shadow_entry->username);
+    }
+
+    PRINT_SLOW_MACRO(SPEED_PRINT, "Hash : %s | Salt : %s\n",shadow_entry->hash, shadow_entry->salt);
+    PRINT_SLOW_MACRO(SPEED_PRINT, "%lu mots testés en %.2f secondes\n",stats->password_count, stats->time_omp);
+    PRINT_SLOW_MACRO(SPEED_PRINT, "Temps CPU : %.2fs | Débit : %.2f pwd/s | Ratio : %.2fx\n\n",stats->time_cpu, stats->throughput, stats->cpu_ratio);
+}
+
+/**
+ * Écrit au format TXT
+ */
+static void write_result_txt(FILE* f, struct NEMESIS_shadow_entry* shadow_entry,const result_stats_t* stats) {
+    time_t now = time(NULL);
+    char timestamp[64];
+    strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", localtime(&now));
+
+    fprintf(f, "\n\n========================================\n");
+    fprintf(f, "NEMESIS - Résultat de craquage\n");
+    fprintf(f, "Date: %s\n", timestamp);
+    fprintf(f, "========================================\n\n");
+
+    fprintf(f, "Utilisateur: %s\n", shadow_entry->username);
+    fprintf(f, "Statut: %s\n", stats->found ? "TROUVÉ ✓" : "NON TROUVÉ ✗");
+
+    if (stats->found) {
+        fprintf(f, "Password: %s\n", stats->password);
+    }
+
+    fprintf(f, "\nDétails du hash:\n");
+    fprintf(f, "  Hash: %s\n", shadow_entry->hash);
+    fprintf(f, "  Salt: %s\n", shadow_entry->salt);
+    fprintf(f, "  Algorithme: %s\n", getAlgoString(shadow_entry->algo));
+
+    fprintf(f, "\nStatistiques:\n");
+    fprintf(f, "  Mots testés: %lu\n", stats->password_count);
+    fprintf(f, "  Temps réel: %.2f secondes\n", stats->time_omp);
+    fprintf(f, "  Temps CPU: %.2f secondes\n", stats->time_cpu);
+    fprintf(f, "  Débit: %.2f mots/seconde\n", stats->throughput);
+    fprintf(f, "  Ratio CPU/Temps: %.2fx\n", stats->cpu_ratio);
+    fprintf(f, "\n========================================\n\n");
+}
+
+/**
+ * Écrit au format JSON
+ */
+static void write_result_json(FILE* f, struct NEMESIS_shadow_entry* shadow_entry,const result_stats_t* stats, int is_first) {
+    time_t now = time(NULL);
+    char timestamp[64];
+    strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%S", localtime(&now));
+
+    if (!is_first) {
+        fprintf(f, ",\n");
+    }
+
+    fprintf(f, "\n\n  {\n");
+    fprintf(f, "    \"timestamp\": \"%s\",\n", timestamp);
+    fprintf(f, "    \"username\": \"%s\",\n", shadow_entry->username);
+    fprintf(f, "    \"found\": %s,\n", stats->found ? "true" : "false");
+
+    if (stats->found) {
+        // Échapper les caractères spéciaux dans le password
+        fprintf(f, "    \"password\": \"%s\",\n", stats->password);
+    }
+
+    fprintf(f, "    \"hash\": {\n");
+    fprintf(f, "      \"value\": \"%s\",\n", shadow_entry->hash);
+    fprintf(f, "      \"salt\": \"%s\",\n", shadow_entry->salt);
+    fprintf(f, "      \"algorithm\": \"%s\"\n", getAlgoString(shadow_entry->algo));
+    fprintf(f, "    },\n");
+
+    fprintf(f, "    \"statistics\": {\n");
+    fprintf(f, "      \"passwords_tested\": %lu,\n", stats->password_count);
+    fprintf(f, "      \"time_real_seconds\": %.2f,\n", stats->time_omp);
+    fprintf(f, "      \"time_cpu_seconds\": %.2f,\n", stats->time_cpu);
+    fprintf(f, "      \"throughput_per_second\": %.2f,\n", stats->throughput);
+    fprintf(f, "      \"cpu_time_ratio\": %.2f\n", stats->cpu_ratio);
+    fprintf(f, "    }\n");
+    fprintf(f, "  }");
+}
+
+/**
+ * Écrit au format CSV
+ */
+static void write_result_csv(FILE* f, struct NEMESIS_shadow_entry* shadow_entry,const result_stats_t* stats, int write_header) {
+    time_t now = time(NULL);
+    char timestamp[64];
+    strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", localtime(&now));
+
+    // Header si première ligne
+    if (write_header) {
+        fprintf(f, "Timestamp,Username,Found,Password,Hash,Salt,Algorithm,");
+        fprintf(f, "PasswordsTested,TimeReal,TimeCPU,Throughput,CPURatio\n");
+    }
+
+    // Échapper les virgules et guillemets dans les champs
+    fprintf(f, "\n\n\"%s\",", timestamp);
+    fprintf(f, "\"%s\",", shadow_entry->username);
+    fprintf(f, "%s,", stats->found ? "YES" : "NO");
+    fprintf(f, "\"%s\",", stats->found ? stats->password : "");
+    fprintf(f, "\"%s\",", shadow_entry->hash);
+    fprintf(f, "\"%s\",", shadow_entry->salt);
+    fprintf(f, "\"%s\",", getAlgoString(shadow_entry->algo));
+    fprintf(f, "%lu,", stats->password_count);
+    fprintf(f, "%.2f,", stats->time_omp);
+    fprintf(f, "%.2f,", stats->time_cpu);
+    fprintf(f, "%.2f,", stats->throughput);
+    fprintf(f, "%.2f\n", stats->cpu_ratio);
+}
+
+/**
+ * Écrit au format XML (bonus)
+ */
+static void write_result_xml(FILE* f, struct NEMESIS_shadow_entry* shadow_entry,const result_stats_t* stats, int is_first) {
+    time_t now = time(NULL);
+    char timestamp[64];
+    strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%S", localtime(&now));
+
+    fprintf(f, "\n\n  <result>\n");
+    fprintf(f, "    <timestamp>%s</timestamp>\n", timestamp);
+    fprintf(f, "    <username>%s</username>\n", shadow_entry->username);
+    fprintf(f, "    <found>%s</found>\n", stats->found ? "true" : "false");
+
+    if (stats->found) {
+        fprintf(f, "    <password><![CDATA[%s]]></password>\n", stats->password);
+    }
+
+    fprintf(f, "    <hash>\n");
+    fprintf(f, "      <value>%s</value>\n", shadow_entry->hash);
+    fprintf(f, "      <salt>%s</salt>\n", shadow_entry->salt);
+    fprintf(f, "      <algorithm>%s</algorithm>\n", getAlgoString(shadow_entry->algo));
+    fprintf(f, "    </hash>\n");
+
+    fprintf(f, "    <statistics>\n");
+    fprintf(f, "      <passwords_tested>%lu</passwords_tested>\n", stats->password_count);
+    fprintf(f, "      <time_real_seconds>%.2f</time_real_seconds>\n", stats->time_omp);
+    fprintf(f, "      <time_cpu_seconds>%.2f</time_cpu_seconds>\n", stats->time_cpu);
+    fprintf(f, "      <throughput_per_second>%.2f</throughput_per_second>\n", stats->throughput);
+    fprintf(f, "      <cpu_time_ratio>%.2f</cpu_time_ratio>\n", stats->cpu_ratio);
+    fprintf(f, "    </statistics>\n");
+    fprintf(f, "  </result>\n");
+}
+
+/**
+ * Écrit les résultats dans un fichier selon le format
+ */
+void write_result(struct NEMESIS_shadow_entry* shadow_entry,const result_stats_t* stats,const char* output_file,NEMESIS_output_format_t format) {
+
+    if (!output_file || output_file[0] == '\0') {
+        write_log(LOG_WARNING, "Aucun fichier de sortie spécifié", "write_result");
+        return;
+    }
+
+    // Déterminer le mode d'ouverture
+    const char* mode = "a";  // Append par défaut
+    int write_header = 0;
+    int is_first = 0;
+
+    // Pour CSV, vérifier si le fichier existe
+    if (format == NEMESIS_OUT_CSV) {
+        FILE* test = fopen(output_file, "r");
+        if (!test) {
+            mode = "w";
+            write_header = 1;
+        } else {
+            fclose(test);
+        }
+    }
+
+    // Pour JSON et XML, gérer la structure
+    if (format == NEMESIS_OUT_JSON || format == NEMESIS_OUT_XML) {
+        FILE* test = fopen(output_file, "r");
+        if (!test) {
+            mode = "w";
+            is_first = 1;
+        } else {
+            // Vérifier si le fichier est vide
+            fseek(test, 0, SEEK_END);
+            long size = ftell(test);
+            is_first = (size == 0);
+            fclose(test);
+
+            if (!is_first && format == NEMESIS_OUT_JSON) {
+                // Retirer le dernier ]\n pour ajouter un nouvel élément
+                FILE* f = fopen(output_file, "r+");
+                if (f) {
+                    fseek(f, -2, SEEK_END);
+                    ftruncate(fileno(f), ftell(f));
+                    fclose(f);
+                }
+            } else if (!is_first && format == NEMESIS_OUT_XML) {
+                // Retirer le dernier </results>\n
+                FILE* f = fopen(output_file, "r+");
+                if (f) {
+                    fseek(f, -11, SEEK_END);
+                    ftruncate(fileno(f), ftell(f));
+                    fclose(f);
+                }
+            }
+        }
+    }
+
+    FILE* f = fopen(output_file, mode);
+    if (!f) {
+        char error_msg[256];
+        snprintf(error_msg, sizeof(error_msg), "Impossible d'ouvrir le fichier: %s", output_file);
+        write_log(LOG_ERROR, error_msg, "write_result");
+        return;
+    }
+
+    // Écrire selon le format
+    switch (format) {
+        case NEMESIS_OUT_TXT :
+            write_result_txt(f, shadow_entry, stats);
+            break;
+
+        case NEMESIS_OUT_JSON:
+            if (is_first) {
+                fprintf(f, "[\n");
+            }
+            write_result_json(f, shadow_entry, stats, !is_first && ftell(f) > 2);
+            fprintf(f, "\n]\n");
+            break;
+
+        case NEMESIS_OUT_CSV:
+            write_result_csv(f, shadow_entry, stats, write_header);
+            break;
+
+        case NEMESIS_OUT_XML:
+            if (is_first) {
+                fprintf(f, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+                fprintf(f, "<results>\n");
+            }
+            write_result_xml(f, shadow_entry, stats, is_first);
+            printf("result xml\n");
+            fprintf(f, "</results>\n");
+            break;
+
+        default:
+            write_log(LOG_ERROR, "Format de sortie inconnu", "write_result");
+            break;
+    }
+
+    fclose(f);
+
+    char log_msg[256];
+    snprintf(log_msg, sizeof(log_msg), "Résultats écrits dans %s", output_file);
+    write_log(LOG_INFO, log_msg, "write_result");
+}
+
+/**
+ * Fonction générique : affiche ET écrit
+ */
+void show_and_write_result(struct NEMESIS_shadow_entry* shadow_entry,const char* output_file,NEMESIS_output_format_t format) {
+    result_stats_t stats = prepare_result_stats();
+
+    show_result(shadow_entry, &stats);
+    write_result(shadow_entry, &stats, output_file, format);
 }
 
 bool safe_concat(char *dest, size_t dest_size, const char *s1, const char *s2) {
@@ -166,7 +444,7 @@ int File_exist(const char *path) {
 
 
 int ask_input(char *buff,char *message,size_t len) {
-    printf("%s",message);
+    PRINT_SLOW_MACRO(SPEED_PRINT,"%s",message);
     if (!buff || len == 0)
         return -1;
 
@@ -181,7 +459,7 @@ void print_banner(void) {
 
     printf(RED);
     print_slow("                Initializing ", 50000);
-    print_slow("NEMESIS ", 50000);
+    print_slow("NEMESIS_ ", 50000);
     print_slow("modules...\n\n", 50000);
     printf(RESET);
     usleep(300000);
@@ -204,7 +482,7 @@ void print_banner(void) {
     printf(RED);
     print_slow("   ──────────────────────────────────────────────────────────\n", 100);
     usleep(80000);
-    print_slow("     NEMESIS — Dictionary & Bruteforce Attack Tool v1.0    \n", 100);
+    print_slow("     NEMESIS_ — Dictionary & Bruteforce Attack Tool v1.0    \n", 100);
     usleep(80000);
     print_slow("       Multi-attack | Threads | Resume | Checkpoints   \n", 100);
     usleep(80000);
@@ -216,3 +494,43 @@ void print_banner(void) {
     printf(RESET);
 
 }
+
+
+static int ensure_dir_exists(const char *path)
+{
+    struct stat st;
+
+    if (stat(path, &st) == 0)
+        return S_ISDIR(st.st_mode) ? 0 : -1;
+
+    if (mkdir(path, 0700) == 0)
+        return 0;
+
+    return -1;
+}
+
+
+int nemesis_init_paths(void)
+{
+    const char *home = getenv("HOME");
+    if (!home) return -1;
+    char base_dir[NEMESIS_MAX_PATH];
+    snprintf(base_dir,NEMESIS_MAX_PATH,"%s/Nemesis",home);
+
+    /* ~/.config */
+    snprintf(NEMESIS_config.output.config_dir, NEMESIS_MAX_PATH, "%s/config", base_dir);
+    snprintf(NEMESIS_config.output.log_dir,    NEMESIS_MAX_PATH, "%s/logs",   base_dir);
+    snprintf(NEMESIS_config.output.save_dir,   NEMESIS_MAX_PATH, "%s/saves",  base_dir);
+
+    /* Création des dossiers */
+    if (ensure_dir_exists(home) != 0) return -1;
+    if (ensure_dir_exists(base_dir) != 0) return -1;
+    if (ensure_dir_exists(NEMESIS_config.output.config_dir) != 0) return -1;
+    if (ensure_dir_exists(NEMESIS_config.output.log_dir) != 0) return -1;
+    if (ensure_dir_exists(NEMESIS_config.output.save_dir) != 0) return -1;
+
+    return 0;
+}
+
+
+

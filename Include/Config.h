@@ -2,8 +2,8 @@
 // Created by bastien on 10/24/25.
 //
 
-#ifndef DA_CONFIG_H
-#define DA_CONFIG_H
+#ifndef NEMESIS_CONFIG_H
+#define NEMESIS_CONFIG_H
 
 
 #include <signal.h>
@@ -14,61 +14,64 @@
 
 #include "Mangling.h"
 
-#define DA_MAX_PATH 4096
+#define NEMESIS_MAX_PATH 4096
 #define CHUNK_SIZE 2048
-#define DA_MAX_THREADS 256
-#define DA_MIN_LEN 1
-#define DA_MAX_LEN 4
-#define DA_MAX_ATTEMPTS 10000000
-#define DA_MANGLING_FAST 222
-#define DA_MANGLING_BALANCED 606
-#define DA_MANGLING_AGGRESSIVE 890
-#define DA_GET_ITERATION_OF_MANGLING(config) \
-((config) == DA_MANGLING_BALANCED   ? DA_MANGLING_FAST : \
-((config) == DA_MANGLING_AGGRESSIVE ? DA_MANGLING_BALANCED : \
-DA_MANGLING_AGGRESSIVE))
-#define DA_STOPPED_FILE "da_binary.conf"
+#define NEMESIS_MAX_THREADS 256
+#define SPEED_PRINT 20000 // ou 20000
+#define NEMESIS_MIN_LEN 1
+#define NEMESIS_MAX_LEN 4
+#define NEMESIS_MAX_ATTEMPTS 10000000
+#define NEMESIS_MANGLING_FAST 222
+#define NEMESIS_MANGLING_BALANCED 606
+#define NEMESIS_MANGLING_AGGRESSIVE 890
+#define NEMESIS_GET_ITERATION_OF_MANGLING(config) \
+((config) == NEMESIS_MANGLING_BALANCED   ? NEMESIS_MANGLING_FAST : \
+((config) == NEMESIS_MANGLING_AGGRESSIVE ? NEMESIS_MANGLING_BALANCED : \
+NEMESIS_MANGLING_AGGRESSIVE))
+#define NEMESIS_STOPPED_FILE "NEMESIS_binary.conf"
 
 
-//#define DA_MAX_ALLOWED_LEN 64
-//#define DA_MIN_ALLOWED_LEN 1
+//#define NEMESIS_MAX_ALLOWED_LEN 64
+//#define NEMESIS_MIN_ALLOWED_LEN 1
 
-#define DA_VERSION 3
-#define DA_CONFIG_MAGIC 0x43464731
-#define DA_BUILD_DATE __DATE__ " " __TIME__
-#define DA_AUTHOR "BASTIEN-ALEXIS-ILIAN"
-#define DA_ERRLEN 2048
+#define NEMESIS_VERSION 3
+#define NEMESIS_CONFIG_MAGIC 0x43464731
+#define NEMESIS_BUILD_DATE __DATE__ " " __TIME__
+#define NEMESIS_AUTHOR "BASTIEN-ALEXIS-ILIAN"
+#define NEMESIS_ERRLEN 2048
 #define DIR_OF_EXE "/proc/self/"
+#define DIR_OF_APP
 
 
 typedef enum {
-    DA_OUT_AUTO,
-    DA_OUT_TXT,
-    DA_OUT_CSV
-} da_output_format_t;
+    NEMESIS_OUT_TXT,
+    NEMESIS_OUT_CSV,
+    NEMESIS_OUT_JSON,
+    NEMESIS_OUT_XML
+} NEMESIS_output_format_t;
 
 typedef enum {
-    DA_CHARSET_PRESET_DEFAULT,
-    DA_CHARSET_PRESET_ALPHANUM,
-    DA_CHARSET_PRESET_NUMERIC,
-    DA_CHARSET_PRESET_CUSTOM
-} da_charset_preset_t;
+    NEMESIS_CHARSET_PRESET_DEFAULT,
+    NEMESIS_CHARSET_PRESET_ALPHANUM,
+    NEMESIS_CHARSET_PRESET_NUMERIC,
+    NEMESIS_CHARSET_PRESET_CUSTOM
+} NEMESIS_charset_preset_t;
 
 /* Sous-structures */
 
-struct da_input {
-    char shadow_file[DA_MAX_PATH];
-    char wordlist_file[DA_MAX_PATH];
+struct NEMESIS_input {
+    char shadow_file[NEMESIS_MAX_PATH];
+    char wordlist_file[NEMESIS_MAX_PATH];
     int save;
 
 };
 
-struct da_attack {
+struct NEMESIS_attack {
     bool enable_dictionary;
     bool enable_bruteforce;
     bool enable_mangling;
     int mangling_config;
-    da_charset_preset_t charset_preset;
+    NEMESIS_charset_preset_t charset_preset;
     char charset_custom[256];
     int min_len;
     int max_len;
@@ -76,20 +79,23 @@ struct da_attack {
     //int retry_delay_ms;
 };
 
-struct da_output {
-    char output_file[DA_MAX_PATH];
-    da_output_format_t format;
+struct NEMESIS_output {
+    char output_file[NEMESIS_MAX_PATH];
+    NEMESIS_output_format_t format;
     //bool enable_stdout;
     bool enable_logging;
-    char log_file[DA_MAX_PATH];
+    char log_file[NEMESIS_MAX_PATH];
+    char config_dir[NEMESIS_MAX_PATH];
+    char log_dir[NEMESIS_MAX_PATH];
+    char save_dir[NEMESIS_MAX_PATH];
 };
 
-struct da_system {
+struct NEMESIS_system {
     int threads;
     bool enable_gpu;
 };
 
-struct da_meta {
+struct NEMESIS_meta {
     int version;
     const char *build_date;
     const char *author;
@@ -97,39 +103,39 @@ struct da_meta {
 
 /* Config principale */
 typedef struct {
-    struct da_input input;
-    struct da_attack attack;
-    struct da_output output;
-    struct da_system system;
-    struct da_meta meta;
+    struct NEMESIS_input input;
+    struct NEMESIS_attack attack;
+    struct NEMESIS_output output;
+    struct NEMESIS_system system;
+    struct NEMESIS_meta meta;
 
     //bool show_help;
-}da_config_t;
+}NEMESIS_config_t;
 
-struct da_config_file {
+struct NEMESIS_config_file {
     __uint32_t magic;
     __uint32_t version;
     __uint32_t checksum;
 
     // Données sérialisables (sans pointeurs)
-    struct da_input input;
-    struct da_attack attack;
-    struct da_output output;
-    struct da_system system;
+    struct NEMESIS_input input;
+    struct NEMESIS_attack attack;
+    struct NEMESIS_output output;
+    struct NEMESIS_system system;
 
     // Meta: seulement la version (pas les pointeurs)
     int meta_version;
 };
 
-extern da_config_t da_config;
+extern NEMESIS_config_t NEMESIS_config;
 extern volatile sig_atomic_t interrupt_requested;
 extern char SavePath[128];
 
-void da_config_init_default(da_config_t *cfg);
-int da_config_validate(const da_config_t *cfg, char *errbuf, size_t errlen);
-void da_print_usage(const char *progname);
-int da_save_config(FILE *file,da_config_t *config);
-int da_load_config(da_config_t *config) ;
-void da_safe_save_config() ;
+void NEMESIS_config_init_default(NEMESIS_config_t *cfg);
+int NEMESIS_config_validate(const NEMESIS_config_t *cfg, char *errbuf, size_t errlen);
+void NEMESIS_print_usage(const char *progname);
+int NEMESIS_save_config(FILE *file,NEMESIS_config_t *config);
+int NEMESIS_load_config(NEMESIS_config_t *config) ;
+void NEMESIS_safe_save_config() ;
 
-#endif //DA_CONFIG_H
+#endif //NEMESIS_CONFIG_H

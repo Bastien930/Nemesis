@@ -14,7 +14,7 @@
 
 #include "Utils.h"
 
-int parse_args(int argc, char *argv[], da_config_t *cfg) {
+int parse_args(int argc, char *argv[], NEMESIS_config_t *cfg) {
     int option;
     int long_index = 0;
     int return_value = 0;
@@ -37,9 +37,9 @@ int parse_args(int argc, char *argv[], da_config_t *cfg) {
         case 'm': {
             cfg->attack.enable_mangling = true;
             if (optarg && strcmp(optarg, "balanced") == 0) {
-                cfg->attack.mangling_config = DA_MANGLING_BALANCED;
+                cfg->attack.mangling_config = NEMESIS_MANGLING_BALANCED;
             } else if (optarg && strcmp(optarg, "alphanum") == 0) {
-                cfg->attack.mangling_config = DA_MANGLING_AGGRESSIVE;
+                cfg->attack.mangling_config = NEMESIS_MANGLING_AGGRESSIVE;
                 // sinon deja Fast par defaut.
             }
             break;
@@ -57,13 +57,13 @@ int parse_args(int argc, char *argv[], da_config_t *cfg) {
 
         case 'c': {
             if (strcmp(optarg, "default") == 0) {
-                cfg->attack.charset_preset = DA_CHARSET_PRESET_DEFAULT;
+                cfg->attack.charset_preset = NEMESIS_CHARSET_PRESET_DEFAULT;
             } else if (strcmp(optarg, "alphanum") == 0) {
-                cfg->attack.charset_preset = DA_CHARSET_PRESET_ALPHANUM;
+                cfg->attack.charset_preset = NEMESIS_CHARSET_PRESET_ALPHANUM;
             } else if (strcmp(optarg, "numeric") == 0) {
-                cfg->attack.charset_preset = DA_CHARSET_PRESET_NUMERIC;
+                cfg->attack.charset_preset = NEMESIS_CHARSET_PRESET_NUMERIC;
             } else {
-                cfg->attack.charset_preset = DA_CHARSET_PRESET_CUSTOM;
+                cfg->attack.charset_preset = NEMESIS_CHARSET_PRESET_CUSTOM;
                 strncpy(cfg->attack.charset_custom, optarg, sizeof(cfg->attack.charset_custom)-1);
                 cfg->attack.charset_custom[sizeof(cfg->attack.charset_custom)-1] = '\0';
             }
@@ -82,7 +82,8 @@ int parse_args(int argc, char *argv[], da_config_t *cfg) {
         }
 
         case 'h': {
-            da_print_usage(argv[0]);
+            printf("avant print\n");
+            NEMESIS_print_usage(argv[0]);
             return_value = 2;
             break;
         }
@@ -99,9 +100,13 @@ int parse_args(int argc, char *argv[], da_config_t *cfg) {
 
         case OPT_FORMAT: {
             if (strcmp(optarg, "csv") == 0)
-                cfg->output.format = DA_OUT_CSV;
+                cfg->output.format = NEMESIS_OUT_CSV;
+            else if (strcmp(optarg, "json") == 0)
+                cfg->output.format = NEMESIS_OUT_JSON;
+            else if (strcmp(optarg, "xml") == 0)
+                cfg->output.format = NEMESIS_OUT_XML;
             else
-                cfg->output.format = DA_OUT_TXT;
+                cfg->output.format = NEMESIS_OUT_TXT;
             break;
         }
 
@@ -123,7 +128,7 @@ int parse_args(int argc, char *argv[], da_config_t *cfg) {
         }
 
         case OPT_VERSION: {
-            puts(STR(DA_VERSION));
+            puts(STR(NEMESIS_VERSION));
             exit(EXIT_SUCCESS);
         }
         case OPT_RESUME: {
@@ -146,7 +151,6 @@ int parse_args(int argc, char *argv[], da_config_t *cfg) {
         }
         return -1;
     }
-
 
     return return_value;
 }

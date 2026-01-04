@@ -16,35 +16,35 @@
    ============================================ */
 
 /* Signature for comparison function pointer */
-typedef bool (*da_hash_compare_fn)(const char *password);
+typedef bool (*NEMESIS_hash_compare_fn)(const char *password);
 
 /* ========== GLOBAL CONSTANTS (defined in Hash_Engine.c) ========== */
-extern const char *da_hash;    /* target hash in hex */
-extern const char *da_salt;           /* salt in hex */
-extern long da_hash_count;   /* number of hashes calculated */
-//extern da_hash_compare_fn da_compare_fn; /* pointer to active compare function */
+extern const char *NEMESIS_hash;    /* target hash in hex */
+extern const char *NEMESIS_salt;           /* salt in hex */
+extern long NEMESIS_hash_count;   /* number of hashes calculated */
+//extern NEMESIS_hash_compare_fn NEMESIS_compare_fn; /* pointer to active compare function */
 
 /* ========== INLINE FUNCTIONS FOR MAX PERFORMANCE ========== */
 
 const char *extract_crypt_hash_part(const char *crypt_res) ;
-bool da_crypt(const char *password) ;
+bool NEMESIS_crypt(const char *password) ;
 
 /**
  * Compare a password with the target hash
  * Inline for maximum speed in brute-force loops
  */
-static inline bool da_hash_compare(const char *password,HashSet *hs) {
+static inline bool NEMESIS_hash_compare(const char *password,HashSet *hs) {
 
     #pragma omp atomic update
-    da_hash_count++;
+    NEMESIS_hash_count++;
 
     //printf("%s\n",password);
-    //return da_compare_fn(password);
+    //return NEMESIS_compare_fn(password);
     if (hs!=NULL && !hashset_add(hs,password)) { // temps gagner de 5s pour yescrypt par mdp // temps execution fnct 3 000 ns
         return false; // il a pas été ajouter car déja présent
 
     }
-    if ( da_crypt(password)) {
+    if ( NEMESIS_crypt(password)) {
         #pragma omp critical
         set_found_password(password);
         return true;
@@ -59,22 +59,22 @@ static inline bool da_hash_compare(const char *password,HashSet *hs) {
 /**
  * Get the number of hashes calculated
  */
-static long da_hash_get_count(void) {
-    return da_hash_count;
+static long NEMESIS_hash_get_count(void) {
+    return NEMESIS_hash_count;
 }
 
 /**
  * Reset the hash counter
  */
-static inline void da_hash_reset_count(void) {
-    da_hash_count = 0;
+static inline void NEMESIS_hash_reset_count(void) {
+    NEMESIS_hash_count = 0;
 }
 
 /**
  * Check if the hash engine is initialized
  */
-static inline bool da_hash_is_initialized(void) {
-    return da_hash != NULL;
+static inline bool NEMESIS_hash_is_initialized(void) {
+    return NEMESIS_hash != NULL;
 }
 
 /* ========== PUBLIC API ========== */
@@ -85,12 +85,12 @@ static inline bool da_hash_is_initialized(void) {
  * @param entry Parsed shadow entry (must remain valid during attack)
  * @return true on success, false on failure
  */
-bool da_hash_engine_init(struct da_shadow_entry *entry);
+bool NEMESIS_hash_engine_init(struct NEMESIS_shadow_entry *entry);
 
 /**
  * Reset the hash engine and free internal buffers
  */
-void da_hash_engine_reset(void);
+void NEMESIS_hash_engine_reset(void);
 
 //void free_global_sha() ;
 
