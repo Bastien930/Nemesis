@@ -15,7 +15,7 @@ typedef enum {
 } NEMESIS_brute_status_t;
 
 NEMESIS_brute_status_t NEMESIS_bruteforce(void) ;
-void NEMESIS_bruteforce_mangling(ManglingConfig *config) ;
+NEMESIS_brute_status_t NEMESIS_bruteforce_mangling(ManglingConfig config) ;
 void save_brute_thread_states(void);
 void delete_brut_thread_states(void) ;
 #include <stdio.h>

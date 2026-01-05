@@ -1,0 +1,96 @@
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-01-04 23:44:46
+========================================
+
+Utilisateur: ta soeur ilian
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: QofkLzQh/gyt.V7pEpROknrf.jY7ZWkMdRxaN4wwlX9
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 229343
+  Temps réel: 43.78 secondes
+  Temps CPU: 619.04 secondes
+  Débit: 5238.52 mots/seconde
+  Ratio CPU/Temps: 14.14x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-01-05 00:26:11
+========================================
+
+Utilisateur: ta soeur ilian
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: QofkLzQh/gyt.V7pEpROknrf.jY7ZWkMdRxaN4wwlX9
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 198108
+  Temps réel: 34.81 secondes
+  Temps CPU: 511.69 secondes
+  Débit: 5691.79 mots/seconde
+  Ratio CPU/Temps: 14.70x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-01-05 00:28:22
+========================================
+
+Utilisateur: ta soeur ilian
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: QofkLzQh/gyt.V7pEpROknrf.jY7ZWkMdRxaN4wwlX9
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 392052
+  Temps réel: 6.45 secondes
+  Temps CPU: 86.44 secondes
+  Débit: 60803.40 mots/seconde
+  Ratio CPU/Temps: 13.41x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-01-05 00:31:31
+========================================
+
+Utilisateur: ta soeur ilian
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: QofkLzQh/gyt.V7pEpROknrf.jY7ZWkMdRxaN4wwlX9
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 91504
+  Temps réel: 16.26 secondes
+  Temps CPU: 233.32 secondes
+  Débit: 5628.44 mots/seconde
+  Ratio CPU/Temps: 14.35x
+
+========================================
+

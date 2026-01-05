@@ -115,7 +115,7 @@ int load_state_from_file(int tid, brute_resume_t *state)
 
 NEMESIS_brute_status_t NEMESIS_bruteforce(void) {
 
-
+    print_slow("Debut de l'attaque Bruteforce...\n",SPEED_PRINT);
 
     char caracteres[256];
 
@@ -221,6 +221,162 @@ NEMESIS_brute_status_t NEMESIS_bruteforce(void) {
                     break;
 
                 local_counter++;
+
+                if (local_counter >= UPDATE_INTERVAL) {
+                    thread_progress[tid].count += local_counter;
+                    strncpy(thread_progress[tid].last_save_word,word,NEMESIS_MAX_LEN);
+                    thread_progress[tid].last_save_word[NEMESIS_MAX_LEN] = '\0';
+
+                    thread_state[tid].length = length;
+                    thread_state[tid].count = thread_progress[tid].count;
+                    memcpy(thread_state[tid].indexes, indexes, sizeof(int) * NEMESIS_MAX_LEN);
+
+                    local_counter = 0;
+                }
+            }
+            #pragma omp critical
+            {
+                stop_ui = 1;
+            }
+        }
+    }
+
+
+    // =========================
+    // SAUVEGARDE ET FIN
+    // =========================
+
+    end_time();
+    if (interrupt_requested) {
+        char res[64];
+        print_slow("Voulez vous sauvegarder l'etat de l'application ? (Y/N) : ",SPEED_PRINT);
+        fflush(stdout);
+
+        if (fgets(res, sizeof(res), stdin) == NULL) return NEMESIS_BRUTE_ERROR;
+
+        if (res[0] != 'Y' && res[0] != 'y') {
+            print_slow("Sauvegarde annulée.\n",SPEED_PRINT);
+
+            return NEMESIS_BRUTE_DONE;
+        }
+        return NEMESIS_BRUTE_INTERRUPTED;
+    }
+
+    printf("\n");
+    fflush(stdout);
+    return NEMESIS_BRUTE_DONE;
+}
+
+
+NEMESIS_brute_status_t NEMESIS_bruteforce_mangling(ManglingConfig config) {
+
+    print_slow("Debut de l'attaque Bruteforce...\n",SPEED_PRINT);
+
+    char caracteres[256];
+
+
+    int len = build_charset(
+        caracteres,
+        sizeof(caracteres),
+        NEMESIS_config.attack.charset_preset,
+        NEMESIS_config.attack.charset_custom
+    );
+
+    if (len < 0) {
+        write_log(LOG_ERROR, "Erreur charset", "bruteforce");
+        return NEMESIS_BRUTE_ERROR;
+    }
+
+    const int b = len;
+
+
+    num_display_threads = NEMESIS_config.system.threads;
+    int mangling_count = NEMESIS_GET_ITERATION_OF_MANGLING(NEMESIS_config.attack.mangling_config);
+    total = puissance(len, NEMESIS_MAX_LEN)*mangling_count/num_display_threads;
+
+
+
+    for (int i = 1; i < num_display_threads; i++) {
+        thread_progress[i].count = 0;
+        thread_progress[i].active = 0;
+        strcpy(thread_progress[i].last_save_word, "");
+        thread_state[i].length = 0;
+        memset(thread_state[i].indexes, 0, sizeof(int) * NEMESIS_MAX_LEN);
+        printf("T%02d [Initialisation...]\n", i);
+    }
+
+    volatile int stop_ui = 0;
+
+    #pragma omp parallel num_threads(num_display_threads)
+    {
+        int tid = omp_get_thread_num();
+
+
+
+        if (tid==0) {
+            sleep(3);
+            while (!stop_ui && !interrupt_requested) {
+
+                print_multi_progress(LL(total));
+
+                struct timespec ts = {0, 500 * 1000000};
+                while (nanosleep(&ts, &ts) == -1) {
+                    if (interrupt_requested)
+                        break;
+                }
+            }
+        } else {
+            int flag = 0;
+            char word[NEMESIS_MAX_LEN + 1];
+            int indexes[NEMESIS_MAX_LEN];
+            int length = 1;
+
+            brute_resume_t state;
+            if (NEMESIS_config.input.save && load_state_from_file(tid, &state)) {
+                length = state.length;
+                memcpy(indexes, state.indexes, sizeof(int) * NEMESIS_MAX_LEN);
+                for (int i = 0; i < length; i++)
+                    word[i] = caracteres[indexes[i]];
+                word[length] = '\0';
+                strcpy(thread_progress[tid].last_save_word,word);
+                thread_state[tid].count = state.count;
+                thread_progress[tid].count = state.count;
+            } else {
+
+
+                // mot initial : "a"
+                indexes[0] = 0;
+                word[0] = caracteres[0];
+                word[1] = '\0';
+
+                // =========================
+                // DÉCALAGE INITIAL (IMPORTANT)
+                // =========================
+                for (int i = 1; i < tid; i++) {
+                    increment_word(word, indexes, caracteres, b, &length, NEMESIS_MAX_LEN);
+                }
+            }
+
+            thread_progress[tid].active = 1;
+#pragma omp flush(thread_progress)
+
+            const long long UPDATE_INTERVAL = CHUNK_SIZE_MANGLING;
+            long long local_counter = 0;
+
+            while (!interrupt_requested && !is_password_found()) {
+
+
+                generate_mangled_words(word,&config);
+
+                // saut de num_threads mots
+                for (int i = 1; i < num_display_threads; i++) {
+                    increment_word(word, indexes, caracteres, b, &length, NEMESIS_MAX_LEN);
+                }
+
+                if (length > NEMESIS_MAX_LEN)
+                    break;
+
+                local_counter+=mangling_count;
 
                 if (local_counter >= UPDATE_INTERVAL) {
                     thread_progress[tid].count += local_counter;

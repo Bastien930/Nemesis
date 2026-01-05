@@ -51,10 +51,9 @@ static const int num_numeric_suffixes = 5;
 static const char *year_suffixes[] = {
     "2025","2024","2023","2022","2021","2020",
     "2019","2018","2015","2010",
-    "2005","2001","2000",
-    "1999","1998","1997","1996","1995","1994","1993","1992","1991","1990"
+    "2000",
 };
-static const int num_year_suffixes = 23;
+static const int num_year_suffixes = 11;
 
 // Suffixes symboles (les symboles réellement rencontrés dans les fuites)
 static const char *symbol_suffixes[] = {
@@ -64,16 +63,16 @@ static const int num_symbol_suffixes = 7;
 
 // Préfixes observés (moins fréquents que les suffixes mais présents)
 static const char *common_prefixes[] = {
-    "1", "123", "!", "@", "#", "$", "_"
+    "123", "!", "@", "#", "$", "_"
 };
-static const int num_common_prefixes = 7;
+static const int num_common_prefixes = 6;
 
 // Mots / tokens fréquemment combinés (observés dans les fuites francophones/internationales)
 static const char *common_words[] = {
     "admin", "welcome", "master", "super", "motdepasse", "mdp",
-    "password", "azerty", "qwerty", "love", "bonjour", "salut"
+    "password", "azerty", "qwerty"
 };
-static const int num_common_words = 12;
+static const int num_common_words = 9;
 
 // === STRUCTURES ===
 
@@ -628,16 +627,16 @@ ManglingConfig NEMESIS_getConfigMangling(int config) {
 }
 int NEMESIS_get_iteration_of_mangling(int config) {
     switch (config) {
-        case NEMESIS_MANGLING_BALANCED : {return 222; break;}
-        case NEMESIS_MANGLING_AGGRESSIVE : {return 606; break;}
-        default : {return 905; break;}
+        case NEMESIS_MANGLING_FAST : {return NEMESIS_MANGLING_FAST; break;}
+        case NEMESIS_MANGLING_BALANCED : {return NEMESIS_MANGLING_BALANCED; break;}
+        default : {return NEMESIS_MANGLING_AGGRESSIVE; break;}
 
     }
 }
 
 // === EXEMPLE D'UTILISATION ===
 
-/*void print_usage_example(int nb) {
+void print_usage_example() {
     //printf("=== MODULE DE MANGLING AVANCÉ ===\n\n");
 
     const char *test_word = "password";
@@ -648,35 +647,26 @@ int NEMESIS_get_iteration_of_mangling(int config) {
     //printf("--- CONFIG FAST (priorité haute uniquement) ---\n");
     ManglingConfig config_fast = get_config_fast();
     generate_mangled_words(test_word, &config_fast);
-    printf("Variations: %d\n", variations.count);
-    for (int i = 0; i < variations.count; i++) {
-        printf("%3d. %s\n", i+1, variations.words[i]);
-    }
+    printf("Variations: %lu\n", NEMESIS_hash_get_count());
 
     // Test config BALANCED
-    printf("\n--- CONFIG BALANCED (priorité haute + moyenne) ---\n");
     ManglingConfig config_balanced = get_config_balanced();
-    generate_mangled_words(test_word, &config_balanced, &variations);
-    printf("Variations: %d\n", variations.count);
-    for (int i = 0; i < variations.count; i++) {
-        printf("%3d. %s\n", i+1, variations.words[i]);
-    }
+    generate_mangled_words(test_word, &config_balanced);
+    printf("Variations: %lu\n", NEMESIS_hash_get_count());
 
     // Test config AGGRESSIVE
     //printf("\n--- CONFIG AGGRESSIVE (toutes priorités) ---\n");
-    ManglingConfig* conf = get_config_fast();
+    ManglingConfig conf_agress = get_config_aggressive();
     //ManglingConfig conf = get_config_aggressive();
     //ManglingConfig conf = get_config_aggressive();
 
 
-    init_global_sha();
-    for (int i=0;i<nb;i++)generate_mangled_words(test_word, conf);
-    free_global_sha();
+    generate_mangled_words(test_word, &conf_agress);
     printf("Variations: %lu\n", NEMESIS_hash_get_count());
     //for (int i = 0; i < variations.count; i++) {
       //  printf("%3d. %s\n", i+1, variations.words[i]);
     //}
-}*/
+}
 
 /*
 int main(int agrc,char *argv[]) {

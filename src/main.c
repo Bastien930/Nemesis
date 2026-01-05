@@ -155,18 +155,25 @@ static void run_attack(void) {
 
         if (!NEMESIS_hash_engine_init(NEMESIS_shadow_entry_liste.entries[i])) {write_log(LOG_ERROR,"erreur lors de l'initialisation du moteur de hash.","run_attack");perror("engine init");}
 
-
-        printf("\n");
+        print_usage_example();
+        return;
         if (NEMESIS_config.attack.enable_dictionary && !NEMESIS_config.attack.enable_bruteforce) {
-            NEMESIS_brute_status_t st = NEMESIS_dictionary_attack(NEMESIS_config.input.wordlist_file);
+            NEMESIS_brute_status_t st;
+            if (NEMESIS_config.attack.enable_mangling)
+               st = NEMESIS_dictionary_attack_mangling(NEMESIS_config.input.wordlist_file,NEMESIS_getConfigMangling(NEMESIS_config.attack.mangling_config));
+            else
+                st = NEMESIS_dictionary_attack(NEMESIS_config.input.wordlist_file);
             if (st == NEMESIS_BRUTE_INTERRUPTED)NEMESIS_safe_save_config();
             if (st == NEMESIS_BRUTE_ERROR);
         }
 
         if (NEMESIS_config.attack.enable_bruteforce && !NEMESIS_config.attack.enable_dictionary) {
-            //if (NEMESIS_config.attack.enable_mangling) NEMESIS_bruteforce_mangling(NEMESIS_getConfigMangling(NEMESIS_config.attack.mangling_config));
-            //else NEMESIS_bruteforce();
-            NEMESIS_brute_status_t st = NEMESIS_bruteforce();
+
+            NEMESIS_brute_status_t st;
+            if (NEMESIS_config.attack.enable_mangling)
+                st = NEMESIS_bruteforce_mangling(NEMESIS_getConfigMangling(NEMESIS_config.attack.mangling_config));
+            else
+                st = NEMESIS_bruteforce();
             if (st == NEMESIS_BRUTE_INTERRUPTED)NEMESIS_safe_save_config();
             if (st == NEMESIS_BRUTE_ERROR);
 

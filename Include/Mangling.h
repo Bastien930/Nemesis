@@ -22,7 +22,7 @@ typedef struct {
 
 
 void generate_mangled_words(const char *base_word, ManglingConfig *config);
-void print_usage_example(int nb) ;
+void print_usage_example() ;
 
 ManglingConfig get_config_aggressive() ;
 ManglingConfig get_config_balanced() ;

@@ -7,6 +7,7 @@
 #include "brute_force.h"
 
 NEMESIS_brute_status_t NEMESIS_dictionary_attack(const char *dict_filename) ;
+NEMESIS_brute_status_t NEMESIS_dictionary_attack_mangling(const char *dict_filename,ManglingConfig config) ;
 void save_dict_thread_states(void) ;
 void delete_dict_thread_states(void) ;
 #endif //NEMESIS__DICTIONNARY_H

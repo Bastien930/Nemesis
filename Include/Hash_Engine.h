@@ -35,15 +35,15 @@ bool NEMESIS_crypt(const char *password) ;
  */
 static inline bool NEMESIS_hash_compare(const char *password,HashSet *hs) {
 
-    #pragma omp atomic update
-    NEMESIS_hash_count++;
+
 
     //printf("%s\n",password);
     //return NEMESIS_compare_fn(password);
     if (hs!=NULL && !hashset_add(hs,password)) { // temps gagner de 5s pour yescrypt par mdp // temps execution fnct 3 000 ns
         return false; // il a pas été ajouter car déja présent
-
     }
+#pragma omp atomic update
+    NEMESIS_hash_count++;
     if ( NEMESIS_crypt(password)) {
         #pragma omp critical
         set_found_password(password);

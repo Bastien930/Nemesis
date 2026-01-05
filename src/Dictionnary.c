@@ -22,8 +22,7 @@
 
 #include "brute_force.h"
 
-#define DICT_BUFFER_SIZE (64 * 1024 * 1024)  // 64 MB buffer
-#define LINE_CHUNK_SIZE 10000
+
 
 
 typedef struct {
@@ -211,7 +210,6 @@ int load_dict_state(int tid, dict_resume_t *state) {
 // Fonction principale d'attaque par dictionnaire
 NEMESIS_brute_status_t NEMESIS_dictionary_attack(const char *dict_filename) {
     print_slow("Dictionary attack starting...\n",SPEED_PRINT);
-    print_slow("Counting lines in dictionary...\n",SPEED_PRINT);
 
     dict_mmap_t dict = {0};
 
@@ -221,7 +219,7 @@ NEMESIS_brute_status_t NEMESIS_dictionary_attack(const char *dict_filename) {
     }
 
     total_lines = dict.num_lines;
-    PRINT_SLOW_MACRO(SPEED_PRINT,"Dictionary loaded: %llu lines\n", (unsigned long long)total_lines);
+    PRINT_SLOW_MACRO(SPEED_PRINT,"Dictionnaire chargé : %llu lignes\n\n", (unsigned long long)total_lines);
 
     num_display_threads = NEMESIS_config.system.threads;
 
@@ -277,7 +275,7 @@ NEMESIS_brute_status_t NEMESIS_dictionary_attack(const char *dict_filename) {
             #pragma omp flush(thread_progress)
 
             // Traitement des lignes
-            uint_fast64_t next_update = LINE_CHUNK_SIZE;
+            uint_fast64_t next_update = CHUNK_SIZE;
 
             for (uint_fast64_t line = my_start; line < my_end && !interrupt_requested; line++) {
                 if (is_password_found()) break;
@@ -285,7 +283,7 @@ NEMESIS_brute_status_t NEMESIS_dictionary_attack(const char *dict_filename) {
                 get_line_from_mmap(&dict, line, word, sizeof(word));
 
                 // Ignorer les lignes vides ou trop longues
-                if (word[0] == '\0' || strlen(word) > NEMESIS_MAX_LEN) continue;
+                if (word[0] == '\0') continue;
 
                 NEMESIS_hash_compare(word, NULL);
 
@@ -300,7 +298,7 @@ NEMESIS_brute_status_t NEMESIS_dictionary_attack(const char *dict_filename) {
                     thread_state[tid].line_number = line;
                     thread_state[tid].count = local_count;
 
-                    next_update += LINE_CHUNK_SIZE;
+                    next_update += CHUNK_SIZE;
                 }
             }
 
@@ -321,18 +319,153 @@ NEMESIS_brute_status_t NEMESIS_dictionary_attack(const char *dict_filename) {
 
     if (interrupt_requested) {
         char res[64];
-        print_slow("\nSauvegarder l'état ? (Y/N) : ",SPEED_PRINT);
+        print_slow("Voulez vous sauvegarder l'etat de l'application ? (Y/N) : ",SPEED_PRINT);
         fflush(stdout);
 
-        if (fgets(res, sizeof(res), stdin) && (res[0] == 'Y' || res[0] == 'y')) {
-            return NEMESIS_BRUTE_INTERRUPTED;
+        if (fgets(res, sizeof(res), stdin) == NULL) return NEMESIS_BRUTE_ERROR;
+
+        if (res[0] != 'Y' && res[0] != 'y') {
+            print_slow("Sauvegarde annulée.\n",SPEED_PRINT);
+
+            return NEMESIS_BRUTE_DONE;
         }
-        return NEMESIS_BRUTE_DONE;
+        return NEMESIS_BRUTE_INTERRUPTED;
     }
 
     printf("\n");
     return NEMESIS_BRUTE_DONE;
 }
+
+NEMESIS_brute_status_t NEMESIS_dictionary_attack_mangling(const char *dict_filename,ManglingConfig config) {
+    print_slow("Debut de l'attaque par dictionnaire...\n",SPEED_PRINT);
+
+    dict_mmap_t dict = {0};
+
+    if (map_dictionary(dict_filename, &dict) < 0) {
+        write_log(LOG_ERROR, "Erreur imposible de map le dictionnaire", "NEMESIS_dictionary_attack_mangling");
+        return NEMESIS_BRUTE_ERROR;
+    }
+
+    total_lines = dict.num_lines;
+    int mangling_count = NEMESIS_GET_ITERATION_OF_MANGLING(NEMESIS_config.attack.mangling_config);
+    PRINT_SLOW_MACRO(SPEED_PRINT,"Dictionnaire chargé: %llu lignes\n\n", (unsigned long long)total_lines);
+    total_lines *= mangling_count;
+
+    num_display_threads = NEMESIS_config.system.threads;
+
+    // Initialisation de l'affichage
+    for (int i = 1; i < num_display_threads; i++) {
+        thread_progress[i].count = 0;
+        thread_progress[i].active = 0;
+        strcpy(thread_progress[i].last_save_word, "");
+        thread_state[i].line_number = 0;
+        thread_state[i].count = 0;
+        printf("T%02d [Initialisation...]\n", i);
+    }
+
+    volatile int stop_ui = 0;
+
+    #pragma omp parallel num_threads(num_display_threads)
+    {
+        int tid = omp_get_thread_num();
+
+        if (tid == 0) {
+            // Thread d'affichage
+            sleep(1);
+            while (!stop_ui && !interrupt_requested) {
+                print_dict_progress(total_lines);
+
+                struct timespec ts = {0, 500 * 1000000};
+                while (nanosleep(&ts, &ts) == -1) {
+                    if (interrupt_requested) break;
+                }
+            }
+        } else {
+            // Threads de travail
+            char word[NEMESIS_MAX_LEN + 1];
+            uint_fast64_t start_line = 0;
+            uint_fast64_t local_count = 0;
+
+            // Reprise si sauvegarde existe
+            dict_resume_t state;
+            if (NEMESIS_config.input.save && load_dict_state(tid, &state)) {
+                start_line = state.line_number;
+                local_count = state.count;
+                thread_progress[tid].count = local_count;
+            }
+
+            // Calcul de la plage de travail pour ce thread
+            uint_fast64_t lines_per_thread = total_lines / (num_display_threads - 1);
+            uint_fast64_t my_start = start_line + (tid - 1) * lines_per_thread;
+            uint_fast64_t my_end = (tid == num_display_threads - 1)
+                                   ? total_lines
+                                   : my_start + lines_per_thread;
+
+            thread_progress[tid].active = 1;
+            #pragma omp flush(thread_progress)
+
+            // Traitement des lignes
+            uint_fast64_t next_update = CHUNK_SIZE_MANGLING;
+
+            for (uint_fast64_t line = my_start; line < my_end && !interrupt_requested; line++) {
+                if (is_password_found()) break;
+
+                get_line_from_mmap(&dict, line, word, sizeof(word));
+
+                // Ignorer les lignes vides ou trop longues
+                if (word[0] == '\0' ) continue;
+
+                generate_mangled_words(word,&config);
+
+                local_count+=mangling_count;
+
+                // Mise à jour périodique par seuil
+                if (local_count >= next_update) {
+                    thread_progress[tid].count = local_count;
+                    strncpy(thread_progress[tid].last_save_word, word, NEMESIS_MAX_LEN);
+                    thread_progress[tid].last_save_word[NEMESIS_MAX_LEN] = '\0';
+
+                    thread_state[tid].line_number = line;
+                    thread_state[tid].count = local_count;
+
+                    next_update += CHUNK_SIZE_MANGLING;
+                }
+            }
+
+            #pragma omp critical
+            {
+                stop_ui = 1;
+            }
+
+            thread_progress[tid].active = 0;
+        }
+    }
+
+    // Nettoyage
+    munmap(dict.data, dict.size);
+    free(dict.line_offsets);
+
+    end_time();
+
+    if (interrupt_requested) {
+        char res[64];
+        print_slow("Voulez vous sauvegarder l'etat de l'application ? (Y/N) : ",SPEED_PRINT);
+        fflush(stdout);
+
+        if (fgets(res, sizeof(res), stdin) == NULL) return NEMESIS_BRUTE_ERROR;
+
+        if (res[0] != 'Y' && res[0] != 'y') {
+            print_slow("Sauvegarde annulée.\n",SPEED_PRINT);
+
+            return NEMESIS_BRUTE_DONE;
+        }
+        return NEMESIS_BRUTE_INTERRUPTED;
+    }
+
+    printf("\n");
+    return NEMESIS_BRUTE_DONE;
+}
+
 
 // Sauvegarde tous les états des threads
 void save_dict_thread_states(void) {
