@@ -2,6 +2,7 @@ nemesis: \
   /usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/Scrt1.o \
   /usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/crti.o \
   /usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o \
+  /usr/lib/gcc/x86_64-linux-gnu/14/crtoffloadbegin.o \
   CMakeFiles/Nemesis.dir/home/bastien/SAE_DA/sae_systeme/src/main.c.o \
   CMakeFiles/Nemesis.dir/home/bastien/SAE_DA/sae_systeme/src/Option.c.o \
   CMakeFiles/Nemesis.dir/home/bastien/SAE_DA/sae_systeme/src/Shadow.c.o \
@@ -19,12 +20,14 @@ nemesis: \
   /usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/libcrypt.so \
   /usr/lib/gcc/x86_64-linux-gnu/14/libgomp.so \
   /usr/lib/x86_64-linux-gnu/libpthread.a \
+  /usr/lib/gcc/x86_64-linux-gnu/14/libgomp.so \
   /usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a \
   /usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so \
   /usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so \
   /usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so \
   /usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/libgcc_s.so.1 \
   /usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a \
+  /usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/libpthread.a \
   /usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/libc.so \
   /usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/libc.so \
   /usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/libc.so \
@@ -39,6 +42,7 @@ nemesis: \
   /usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a \
   /usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o \
   /usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/crtn.o \
+  /usr/lib/gcc/x86_64-linux-gnu/14/crtoffloadend.o \
   /lib64/ld-linux-x86-64.so.2
 
 /usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/Scrt1.o:
@@ -46,6 +50,8 @@ nemesis: \
 /usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/crti.o:
 
 /usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/crtoffloadbegin.o:
 
 CMakeFiles/Nemesis.dir/home/bastien/SAE_DA/sae_systeme/src/main.c.o:
 
@@ -81,6 +87,8 @@ CMakeFiles/Nemesis.dir/home/bastien/SAE_DA/sae_systeme/src/Dictionnary.c.o:
 
 /usr/lib/x86_64-linux-gnu/libpthread.a:
 
+/usr/lib/gcc/x86_64-linux-gnu/14/libgomp.so:
+
 /usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a:
 
 /usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so:
@@ -92,6 +100,8 @@ CMakeFiles/Nemesis.dir/home/bastien/SAE_DA/sae_systeme/src/Dictionnary.c.o:
 /usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/libgcc_s.so.1:
 
 /usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/libpthread.a:
 
 /usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/libc.so:
 
@@ -120,5 +130,7 @@ CMakeFiles/Nemesis.dir/home/bastien/SAE_DA/sae_systeme/src/Dictionnary.c.o:
 /usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o:
 
 /usr/lib/gcc/x86_64-linux-gnu/14/../../../x86_64-linux-gnu/crtn.o:
+
+/usr/lib/gcc/x86_64-linux-gnu/14/crtoffloadend.o:
 
 /lib64/ld-linux-x86-64.so.2:

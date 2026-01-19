@@ -56,10 +56,7 @@ bool NEMESIS_add_shadow_entry(struct NEMESIS_shadow_entry *to_add,struct NEMESIS
     if (!to_add || !list) {return false;}
     if (list->count >= list->capacity) {
         int new_capacity = list->capacity ? list->capacity * 2 : 16;
-        struct NEMESIS_shadow_entry **tmp = realloc(
-            list->entries,
-            sizeof(struct NEMESIS_shadow_entry *) * new_capacity
-        );
+        struct NEMESIS_shadow_entry **tmp = realloc(list->entries,sizeof(struct NEMESIS_shadow_entry *) * new_capacity);
         if (!tmp) { write_log(LOG_ERROR,"erreur de realloc pour entries","NEMESIS_add_shadow_entry()");perror("realloc"); return false;} // allocation échouée
         list->entries = tmp;
         list->capacity = new_capacity;

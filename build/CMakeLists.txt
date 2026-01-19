@@ -45,11 +45,11 @@ endif()
 
 # Optimisations
 # Debug : pas d'optimisations agressives, ajouter -g et garder frame pointers
-set(CMAKE_C_FLAGS_DEBUG "-g -O0 -fno-omit-frame-pointer -Wall -Wextra -fopenmp")
+#set(CMAKE_C_FLAGS_DEBUG "-g -O0 -fno-omit-frame-pointer -Wall -Wextra -fopenmp")
 #set(CMAKE_EXE_LINKER_FLAGS_DEBUG "")
 
 # Release : tu peux garder ton tuning, séparé du debug
-#set(CMAKE_C_FLAGS_RELEASE "-O3 -fno-omit-frame-pointer -march=native -funroll-loops -fopenmp")
+set(CMAKE_C_FLAGS_RELEASE "-O3 -fno-omit-frame-pointer -march=native -funroll-loops -fopenmp")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "")
 
 

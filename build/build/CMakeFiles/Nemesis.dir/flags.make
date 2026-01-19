@@ -6,5 +6,5 @@ C_DEFINES =
 
 C_INCLUDES = -I/home/bastien/SAE_DA/sae_systeme/build/../Include
 
-C_FLAGS = -O3 -DNDEBUG -std=gnu2x -fopenmp
+C_FLAGS = -O3 -fno-omit-frame-pointer -march=native -funroll-loops -fopenmp -std=gnu2x -fopenmp
 

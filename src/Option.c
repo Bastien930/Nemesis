@@ -38,7 +38,7 @@ int parse_args(int argc, char *argv[], NEMESIS_config_t *cfg) {
             cfg->attack.enable_mangling = true;
             if (optarg && strcmp(optarg, "balanced") == 0) {
                 cfg->attack.mangling_config = NEMESIS_MANGLING_BALANCED;
-            } else if (optarg && strcmp(optarg, "alphanum") == 0) {
+            } else if (optarg && strcmp(optarg, "agressive") == 0) {
                 cfg->attack.mangling_config = NEMESIS_MANGLING_AGGRESSIVE;
                 // sinon deja Fast par defaut.
             }

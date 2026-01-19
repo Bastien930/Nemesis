@@ -1486,9 +1486,12 @@ nemesis
  /usr/lib/x86_64-linux-gnu/libcrypt.so
  /usr/lib/x86_64-linux-gnu/libcrypto.so
  /usr/lib/x86_64-linux-gnu/libgcc_s.so.1
+ /usr/lib/x86_64-linux-gnu/libpthread.a
  /usr/lib/x86_64-linux-gnu/libz.so
  /usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o
  /usr/lib/gcc/x86_64-linux-gnu/14/crtendS.o
+ /usr/lib/gcc/x86_64-linux-gnu/14/crtoffloadbegin.o
+ /usr/lib/gcc/x86_64-linux-gnu/14/crtoffloadend.o
  /usr/lib/gcc/x86_64-linux-gnu/14/libgcc.a
  /usr/lib/gcc/x86_64-linux-gnu/14/libgcc_s.so
  /usr/lib/gcc/x86_64-linux-gnu/14/libgomp.so

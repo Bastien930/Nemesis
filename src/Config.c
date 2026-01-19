@@ -170,8 +170,8 @@ void NEMESIS_print_usage(const char *progname) {
     puts("  -w, --wordlist <file>      Fichier wordlist (pour attaque par dictionnaire).");
     puts("      --resume               Active la reprise du programme a partir de la sauvegarde.");
     puts("  -m, --mangling <config>    Config vaut fast, balanced, agressive (défaut : fast).");
-    puts("  -d, --dictionary           Activer le mode dictionnaire (par défaut).");
-    puts("  -b, --bruteforce           Activer le mode bruteforce (optionnel).");
+    puts("  -d, --dictionary           Activer le mode dictionnaire.");
+    puts("  -b, --bruteforce           Activer le mode bruteforce.");
     puts("  -c, --charset <preset|chars> Charset prédéfini ou liste explicite de caractères.");
     puts("                             presets: default, alphanum, numeric, <custom>");
     puts("      --min <n>              Longueur minimale pour génération brutforce (défaut : " STR(NEMESIS_MIN_LEN) ").");
@@ -203,9 +203,7 @@ void NEMESIS_print_usage(const char *progname) {
     puts("");
     fflush(stdout);
 }
-#include "Config.h"
-#include <string.h>
-#include <zlib.h>
+
 
 int NEMESIS_save_config(FILE *file, NEMESIS_config_t *config) {
     if (!file || !config) return -1;
@@ -303,6 +301,8 @@ int NEMESIS_load_config(NEMESIS_config_t *config) {
 
     return 0;
 }
+
+
 
 void NEMESIS_safe_save_config(void) {
     // Vérifier si un fichier existe déjà

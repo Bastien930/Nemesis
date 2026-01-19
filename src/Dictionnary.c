@@ -78,7 +78,7 @@ static void print_dict_progress(uint_fast64_t total) {
     printf("\033[K");
     printf("GLOBAL [");
     for (int j = 0; j < bar_width; j++) {
-        printf("%s", j < filled ? "-" : "#");
+        printf("%s", j < filled ? "#" : "-");
     }
     printf("] %5.1f%%\n", global_percent);
 
@@ -185,9 +185,10 @@ static inline void get_line_from_mmap(const dict_mmap_t *dict, uint_fast64_t lin
 // Sauvegarde de l'état
 void save_dict_state(int tid, const dict_resume_t *state) {
     char filename[NEMESIS_MAX_PATH];
+    char fullPath[NEMESIS_MAX_PATH];
     snprintf(filename, sizeof(filename), "resume_dict_thread_%d.bin", tid);
-    PATH_JOIN(filename,NEMESIS_MAX_PATH,NEMESIS_config.output.save_dir,filename);
-    FILE *f = fopen(filename, "wb");
+    PATH_JOIN(fullPath,NEMESIS_MAX_PATH,NEMESIS_config.output.save_dir,filename);
+    FILE *f = fopen(fullPath, "wb");
     if (!f) return;
 
     fwrite(state, sizeof(dict_resume_t), 1, f);
@@ -197,10 +198,11 @@ void save_dict_state(int tid, const dict_resume_t *state) {
 // Chargement de l'état
 int load_dict_state(int tid, dict_resume_t *state) {
     char filename[NEMESIS_MAX_PATH];
+    char fullPath[NEMESIS_MAX_PATH];
     snprintf(filename, sizeof(filename), "resume_dict_thread_%d.bin", tid);
-    PATH_JOIN(filename,NEMESIS_MAX_PATH,NEMESIS_config.output.save_dir,filename);
-    FILE *f = fopen(filename, "rb");
-    if (!f) return 0;
+    PATH_JOIN(fullPath,NEMESIS_MAX_PATH,NEMESIS_config.output.save_dir,filename);
+    FILE *f = fopen(fullPath, "rb");
+    if (!f) return -1;
 
     unsigned long r = fread(state, sizeof(dict_resume_t), 1, f);
     fclose(f);
@@ -266,7 +268,14 @@ NEMESIS_brute_status_t NEMESIS_dictionary_attack(const char *dict_filename) {
 
             // Calcul de la plage de travail pour ce thread
             uint_fast64_t lines_per_thread = total_lines / (num_display_threads - 1);
-            uint_fast64_t my_start = start_line + (tid - 1) * lines_per_thread;
+            uint_fast64_t my_start;
+            if (NEMESIS_config.input.save && start_line > 0) {
+                // Reprise : start_line est déjà ABSOLU
+                my_start = start_line;
+            } else {
+                // Exécution normale
+                my_start = (tid - 1) * lines_per_thread;
+            }
             uint_fast64_t my_end = (tid == num_display_threads - 1)
                                    ? total_lines
                                    : my_start + lines_per_thread;
@@ -478,8 +487,9 @@ void save_dict_thread_states(void) {
 void delete_dict_thread_states(void) {
     for (int i=0;i<NEMESIS_MAX_THREADS;i++) {
         char filename[NEMESIS_MAX_PATH];
+        char fullPath[NEMESIS_MAX_PATH];
         snprintf(filename, sizeof(filename),"resume_dict_thread_%d.bin", i);
-        PATH_JOIN(filename,NEMESIS_MAX_PATH,NEMESIS_config.output.save_dir,filename);
-        remove(filename);
+        PATH_JOIN(fullPath,NEMESIS_MAX_PATH,NEMESIS_config.output.save_dir,filename);
+        remove(fullPath);
     }
 }

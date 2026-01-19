@@ -78,33 +78,23 @@ static void print_multi_progress(uint_fast64_t total) {
     printf("\033[K");  // Effacer la ligne
     printf("GLOBAL [");
     for (int j = 0; j < bar_width; j++) {
-        printf("%s", j < filled ? "-" : "#");
+        printf("%s", j < filled ? "#" : "-");
     }
     printf("] %5.1f%%\n", global_percent);
 
     fflush(stdout);
 }
 
-void save_state_to_file(int tid, const brute_resume_t *state)
-{
-    char filename[NEMESIS_MAX_PATH];
-    snprintf(filename, sizeof(filename), "resume_thread_%d.bin", tid);
-    PATH_JOIN(filename,NEMESIS_MAX_PATH,NEMESIS_config.output.save_dir,filename);
 
-    FILE *f = fopen(filename, "wb");
-    if (!f) return;
-
-    fwrite(state, sizeof(brute_resume_t), 1, f);
-    fclose(f);
-}
 
 
 int load_state_from_file(int tid, brute_resume_t *state)
 {
     char filename[NEMESIS_MAX_PATH];
+    char fullPath[NEMESIS_MAX_PATH];
     snprintf(filename, sizeof(filename), "resume_thread_%d.bin", tid);
-    PATH_JOIN(filename,NEMESIS_MAX_PATH,NEMESIS_config.output.save_dir,filename);
-    FILE *f = fopen(filename, "rb");
+    PATH_JOIN(fullPath,NEMESIS_MAX_PATH,NEMESIS_config.output.save_dir,filename);
+    FILE *f = fopen(fullPath, "rb");
     if (!f){return 0;}
 
     int r = fread(state, sizeof(brute_resume_t), 1, f);
@@ -148,7 +138,6 @@ NEMESIS_brute_status_t NEMESIS_bruteforce(void) {
         memset(thread_state[i].indexes, 0, sizeof(int) * NEMESIS_MAX_LEN);
         printf("T%02d [Initialisation...]\n", i);
     }
-
     volatile int stop_ui = 0;
 
     #pragma omp parallel num_threads(num_display_threads)
@@ -173,7 +162,7 @@ NEMESIS_brute_status_t NEMESIS_bruteforce(void) {
             int flag = 0;
             char word[NEMESIS_MAX_LEN + 1];
             int indexes[NEMESIS_MAX_LEN];
-            int length = 1;
+            int length = NEMESIS_config.attack.min_len;
 
             brute_resume_t state;
             if (NEMESIS_config.input.save && load_state_from_file(tid, &state)) {
@@ -189,10 +178,13 @@ NEMESIS_brute_status_t NEMESIS_bruteforce(void) {
 
 
                 // mot initial : "a"
-                indexes[0] = 0;
-                word[0] = caracteres[0];
-                word[1] = '\0';
-
+                for (int i = 0; i < NEMESIS_config.attack.min_len; i++) {
+                    indexes[i] = 0;
+                    word[i] = caracteres[0];
+                }
+                word[NEMESIS_config.attack.min_len] = '\0';
+                length = NEMESIS_config.attack.min_len;
+                printf("word : %s\n",word);
                 // =========================
                 // DÉCALAGE INITIAL (IMPORTANT)
                 // =========================
@@ -429,11 +421,12 @@ void save_brute_thread_states(void) {
         if (thread_state[i].count == 0)
             continue;
 
+        char fullPath[NEMESIS_MAX_PATH];
         char filename[NEMESIS_MAX_PATH];
         snprintf(filename, sizeof(filename),"resume_thread_%d.bin", i);
-        PATH_JOIN(filename,NEMESIS_MAX_PATH,NEMESIS_config.output.config_dir,filename);
-        FILE *f = fopen(filename, "wb");
-        if (!f) continue;
+        PATH_JOIN(fullPath,NEMESIS_MAX_PATH,NEMESIS_config.output.save_dir,filename);
+        FILE *f = fopen(fullPath, "wb");
+        if (!f) {write_log(LOG_ERROR, "Erreur lors de la sauvegarde du fichier de progression", "bruteforce");perror("save");return;}
 
         fwrite(&thread_state[i], sizeof(brute_resume_t), 1, f);
         fclose(f);
@@ -443,9 +436,10 @@ void save_brute_thread_states(void) {
 void delete_brut_thread_states(void) {
     for (int i=0;i<NEMESIS_MAX_THREADS;i++) {
         char filename[NEMESIS_MAX_PATH];
+        char fullPath[NEMESIS_MAX_PATH];
         snprintf(filename, sizeof(filename),"resume_thread_%d.bin", i);
-        PATH_JOIN(filename,NEMESIS_MAX_PATH,NEMESIS_config.output.save_dir,filename);
-        remove(filename);
+        PATH_JOIN(fullPath,NEMESIS_MAX_PATH,NEMESIS_config.output.save_dir,filename);
+        remove(fullPath);
     }
 }
 
@@ -510,7 +504,7 @@ int build_charset(char *out, size_t out_size,
 
         case NEMESIS_CHARSET_PRESET_DEFAULT:
             // ASCII imprimable (32 à 126)
-            for (int c = 32; c <= 126; c++) {
+            for (int c = 33; c <= 126; c++) {
                 if (pos + 1 >= out_size) return -1;
                 out[pos++] = (char)c;
             }

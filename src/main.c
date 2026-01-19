@@ -78,20 +78,21 @@ int main(int argc, char* argv[]){
 
 
     //print_banner();
-    //sleep(10);
+    //sleep(2);
 
     NEMESIS_config_init_default(&NEMESIS_config);
-
+    nemesis_init_paths();
 
 
 
     int retour_parse_args = parse_args(argc, argv, &NEMESIS_config);
-    //printf("retour arg : %d\n",retour_parse_args);
+    printf("retour arg : %d\n",retour_parse_args);
     if (retour_parse_args == 2) {
         return 0;
     }
     if (retour_parse_args==1) {
         int retourn = NEMESIS_load_config(&NEMESIS_config);
+        printf("retour de load config : %d\n",retourn);
     }
 
     if (retour_parse_args < 0 ) {
@@ -116,7 +117,7 @@ static void run_attack(void) {
     // si dictionnaire
     // si brutforce.
     // si mangling echec.
-    nemesis_init_paths();
+
     if (NEMESIS_config.output.enable_logging) {if (init_log(NEMESIS_config.output.log_file,LOG_DEBUG) < 0) print_slow("erreur lors de l'initialisation des logs\n",SPEED_PRINT); else print_slow("Init log : Sucess\n",SPEED_PRINT);}
 
     NEMESIS_init_shadow_entry_list(&NEMESIS_shadow_entry_liste);
@@ -152,11 +153,9 @@ static void run_attack(void) {
 
         init_time(); // le end time ce fait par les fnct de brut force.
         reset_found_password();
-
+        printf("test1");
         if (!NEMESIS_hash_engine_init(NEMESIS_shadow_entry_liste.entries[i])) {write_log(LOG_ERROR,"erreur lors de l'initialisation du moteur de hash.","run_attack");perror("engine init");}
-
-        print_usage_example();
-        return;
+        printf("test");
         if (NEMESIS_config.attack.enable_dictionary && !NEMESIS_config.attack.enable_bruteforce) {
             NEMESIS_brute_status_t st;
             if (NEMESIS_config.attack.enable_mangling)
@@ -168,7 +167,7 @@ static void run_attack(void) {
         }
 
         if (NEMESIS_config.attack.enable_bruteforce && !NEMESIS_config.attack.enable_dictionary) {
-
+            printf("brute force");
             NEMESIS_brute_status_t st;
             if (NEMESIS_config.attack.enable_mangling)
                 st = NEMESIS_bruteforce_mangling(NEMESIS_getConfigMangling(NEMESIS_config.attack.mangling_config));

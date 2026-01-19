@@ -117,7 +117,7 @@ typedef struct {
 struct NEMESIS_config_file {
     __uint32_t magic;
     __uint32_t version;
-    __uint32_t checksum;
+
 
     // Données sérialisables (sans pointeurs)
     struct NEMESIS_input input;
@@ -127,6 +127,7 @@ struct NEMESIS_config_file {
 
     // Meta: seulement la version (pas les pointeurs)
     int meta_version;
+    __uint32_t checksum;
 };
 
 extern NEMESIS_config_t NEMESIS_config;
