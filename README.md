@@ -63,13 +63,13 @@ man nemesis
 ## Utilisation générale
 
 ```bash
-./nemesis [options]
+nemesis [options]
 ```
 
 Afficher l’aide :
 
 ```bash
-./nemesis --help
+nemesis --help
 ```
 
 ---
@@ -101,19 +101,19 @@ Afficher l’aide :
 ### Mode bruteforce
 
 ```bash
-./nemesis -s shadow.dump -b --charset "abcd" --output result.json --format json
+nemesis -s shadow.dump -b --charset "abcd" --output result.json --format json
 ```
 
 ### Mode dictionnaire
 
 ```bash
-./nemesis -s /etc/shadow -w rockyou.txt --mangling fast --log nemesis.log
+nemesis -s /etc/shadow -w rockyou.txt --mangling fast --log nemesis.log
 ```
 
 ### Reprise
 
 ```bash
-./nemesis --resume
+nemesis --resume
 ```
 
 ---
