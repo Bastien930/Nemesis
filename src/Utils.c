@@ -5,27 +5,18 @@
 
 #include "Utils.h"
 #include "Shadow.h"
+#include "Hash_Engine.h"
+#include "Config.h"
+#include "log.h"
+
+
 #include <stdio.h>
 #include <unistd.h> // pour usleep()
 #include <stdatomic.h>
 #include <pthread.h>
-#include <stdbool.h>
-#include "Hash_Engine.h"
-#include "Config.h"
 #include <omp.h>
 #include <sys/stat.h>
-
-
-#include <stdio.h>
-#include <unistd.h> // pour usleep()
-
-#define RED   "\x1b[31m"
-#define RESET "\x1b[0m"
-
 #include <string.h>
-
-#include "log.h"
-#include "main.h"
 
 long NEMESIS_iteration = 1;
 
@@ -33,44 +24,34 @@ clock_t start;
 clock_t end;
 double start_omp;
 double end_omp;
-/* définition des variables globales */
 atomic_int g_password_found = 0;
 
 char g_found_password[MAX_WORD_LEN] = {0};
 pthread_mutex_t g_found_password_lock = PTHREAD_MUTEX_INITIALIZER;
 
+/**
+ * Initialize timing variables for performance measurement
+ */
 void init_time(void) {
     start = clock();
     start_omp = omp_get_wtime();
 
 }
 
+/**
+ * Stop timing measurement and store end values
+ */
 void end_time(void) {
     end = clock();
     end_omp = omp_get_wtime();
 
 }
 
-/*void print_progress_bar(long long current, long long total, const char *word,bool is_slow) {
-    const int bar_width = 80;
-    float progress = (float)current / total;
-    int filled = (int)(progress * bar_width);
-
-    printf("\r[");
-    for (int i = 0; i < bar_width; i++) {
-        if (is_slow) usleep(30000);
-        if (i < filled) printf("=");
-        else if (i == filled) printf(">");
-        else printf(" ");
-        fflush(stdout);
-    }
-    printf("] %.1f%% (%lld/%lld) | %s",
-           progress * 100, current, total, word);
-    fflush(stdout);
-    if (is_slow) sleep(2);
-}*/
-
-
+/**
+ * Store a found password in thread-safe way
+ * 
+ * @param pw Password string to store
+ */
 void set_found_password(const char *pw) {
     if (!pw) return;
 
@@ -83,6 +64,9 @@ void set_found_password(const char *pw) {
     atomic_store_explicit(&g_password_found, 1, memory_order_release);
 }
 
+/**
+ * Reset the found password and status flags
+ */
 void reset_found_password(void) {
     pthread_mutex_lock(&g_found_password_lock);
     g_found_password[0] = '\0';
@@ -92,11 +76,21 @@ void reset_found_password(void) {
     atomic_store_explicit(&g_password_found,0, memory_order_release);
 }
 
+/**
+ * Check if a password has been found
+ *
+ * @return true if password was found, false otherwise
+ */
 bool is_password_found(void) {
     return atomic_load_explicit(&g_password_found, memory_order_acquire);
 }
 
-// Lecture sécurisée du mot de passe
+/**
+ * Copy the found password into a buffer in thread-safe way
+ *
+ * @param buf Buffer to store password
+ * @param bufsize Size of buffer
+ */
 void get_found_password(char *buf, size_t bufsize) {
     if (!buf || bufsize == 0) return;
 
@@ -109,6 +103,12 @@ void get_found_password(char *buf, size_t bufsize) {
 
 
 
+/**
+ * Print text character by character with delay
+ *
+ * @param text Text to print
+ * @param delay_us Microseconds to wait between characters
+ */
 void print_slow(const char *text, useconds_t delay_us) {
     for (const char *p = text; *p != '\0'; p++) {
         printf("%c", *p);
@@ -116,15 +116,6 @@ void print_slow(const char *text, useconds_t delay_us) {
         usleep(delay_us);
     }
 }
-
-long count_iteration(int iteration) {
-    ;
-}
-
-
-
-
-
 
 /**
  * Prépare les statistiques
@@ -154,7 +145,7 @@ void show_result(struct NEMESIS_shadow_entry* shadow_entry, const result_stats_t
     if (!stats->found) {
         PRINT_SLOW_MACRO(SPEED_PRINT, "Aucune correspondance trouvée pour : %s\n",shadow_entry->username);
     } else {
-        PRINT_SLOW_MACRO(SPEED_PRINT, "Password trouvé : %s pour : %s\n",stats->password, shadow_entry->username);
+        PRINT_SLOW_MACRO(SPEED_PRINT, "Password trouvé : %s\n pour l'utilisateur : %s\n",stats->password, shadow_entry->username);
     }
 
     PRINT_SLOW_MACRO(SPEED_PRINT, "Hash : %s | Salt : %s\n",shadow_entry->hash, shadow_entry->salt);
@@ -297,7 +288,12 @@ static void write_result_xml(FILE* f, struct NEMESIS_shadow_entry* shadow_entry,
 }
 
 /**
- * Écrit les résultats dans un fichier selon le format
+ * Écrit les résultats dans un fichier au format spécifié.
+ *
+ * @param shadow_entry Pointeur vers une entrée de type NEMESIS_shadow_entry contenant les informations à inclure dans le résultat.
+ * @param stats Pointeur vers une structure de statistique de type result_stats_t contenant les statistiques calculées.
+ * @param output_file Nom du fichier où écrire les résultats. Si le fichier n'existe pas, il sera créé.
+ * @param format Format de sortie à utiliser. Les formats supportés sont définis dans NEMESIS_output_format_t.
  */
 void write_result(struct NEMESIS_shadow_entry* shadow_entry,const result_stats_t* stats,const char* output_file,NEMESIS_output_format_t format) {
 
@@ -413,6 +409,15 @@ void show_and_write_result(struct NEMESIS_shadow_entry* shadow_entry,const char*
     write_result(shadow_entry, &stats, output_file, format);
 }
 
+/**
+ * Safely concatenate two strings into a destination buffer
+ *
+ * @param dest Destination buffer
+ * @param dest_size Size of destination buffer
+ * @param s1 First string to concatenate
+ * @param s2 Second string to concatenate
+ * @return true if concatenation succeeded, false if buffer too small or null params
+ */
 bool safe_concat(char *dest, size_t dest_size, const char *s1, const char *s2) {
     if (!dest || !s1 || !s2) return false;
 
@@ -430,6 +435,13 @@ bool safe_concat(char *dest, size_t dest_size, const char *s1, const char *s2) {
     return true;
 }
 
+/**
+ * Calculate integer power of a number
+ *
+ * @param base Base number
+ * @param exp Exponent
+ * @return base raised to exp power
+ */
 uint_fast64_t puissance(int base, int exp) {
     long long res = 1;
     for (int i = 0; i < exp; i++) {
@@ -438,11 +450,25 @@ uint_fast64_t puissance(int base, int exp) {
     return res;
 }
 
+/**
+ * Check if a file exists
+ *
+ * @param path Path to file
+ * @return 1 if file exists, 0 otherwise
+ */
 int File_exist(const char *path) {
     return access(path, F_OK) == 0;
 }
 
 
+/**
+ * Get user input with prompt message
+ *
+ * @param buff Buffer to store input
+ * @param message Prompt message to display
+ * @param len Maximum length to read
+ * @return 0 on success, -1 on error
+ */
 int ask_input(char *buff,char *message,size_t len) {
     PRINT_SLOW_MACRO(SPEED_PRINT,"%s",message);
     if (!buff || len == 0)
@@ -496,6 +522,12 @@ void print_banner(void) {
 }
 
 
+/**
+ * Ensure a directory exists, creating it if necessary
+ *
+ * @param path Path to directory
+ * @return 0 if directory exists or was created, -1 on error
+ */
 static int ensure_dir_exists(const char *path)
 {
     struct stat st;
@@ -510,6 +542,11 @@ static int ensure_dir_exists(const char *path)
 }
 
 
+/**
+ * Initialize application paths and create required directories
+ *
+ * @return 0 on success, -1 on error
+ */
 int nemesis_init_paths(void)
 {
     const char *home = getenv("HOME");

@@ -10,7 +10,7 @@
 #include "Utils.h"
 #include "log.h"
 #include "Hash_Engine.h"
-#include "main.h"
+#include "brute_force.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,7 +20,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "brute_force.h"
 
 
 
@@ -44,6 +43,11 @@ typedef struct {
 } dict_mmap_t;
 
 // Affichage de la progression multi-threads
+/**
+ * Afficher la progression de l'attaque par dictionnaire pour tous les threads
+ *
+ * @param total Nombre total de lignes à traiter
+ */
 static void print_dict_progress(uint_fast64_t total) {
     printf("\033[%dA", num_display_threads);
 
@@ -85,7 +89,12 @@ static void print_dict_progress(uint_fast64_t total) {
     fflush(stdout);
 }
 
-// Compte les lignes du fichier (optimisé)
+/**
+ * Compter le nombre de lignes dans un fichier
+ *
+ * @param filename Chemin du fichier à analyser
+ * @return Nombre de lignes dans le fichier, 0 si erreur
+ */
 static uint_fast64_t count_file_lines(const char *filename) {
     FILE *f = fopen(filename, "rb");
     if (!f) return 0;
@@ -104,7 +113,13 @@ static uint_fast64_t count_file_lines(const char *filename) {
     return lines;
 }
 
-// Map le fichier en mémoire et indexe les lignes
+/**
+ * Charger un dictionnaire en mémoire avec mmap et indexer ses lignes
+ *
+ * @param filename Chemin du fichier dictionnaire
+ * @param dict Structure à remplir avec les données mappées
+ * @return 0 en cas de succès, -1 si erreur
+ */
 static int map_dictionary(const char *filename, dict_mmap_t *dict) {
     int fd = open(filename, O_RDONLY);
     if (fd < 0) {
@@ -127,7 +142,7 @@ static int map_dictionary(const char *filename, dict_mmap_t *dict) {
         return -1;
     }
 
-    // Conseiller au kernel la stratégie de lecture
+    // pour le kernel
     madvise(dict->data, dict->size, MADV_SEQUENTIAL);
 
     // Compter et indexer les lignes
@@ -136,7 +151,6 @@ static int map_dictionary(const char *filename, dict_mmap_t *dict) {
         if (dict->data[i] == '\n') dict->num_lines++;
     }
 
-    // Allouer le tableau d'offsets
     dict->line_offsets = malloc((dict->num_lines + 1) * sizeof(uint_fast64_t));
     if (!dict->line_offsets) {
         munmap(dict->data, dict->size);
@@ -156,7 +170,14 @@ static int map_dictionary(const char *filename, dict_mmap_t *dict) {
     return 0;
 }
 
-// Extrait une ligne depuis le mmap
+/**
+ * Extraire une ligne spécifique du dictionnaire mappé en mémoire
+ *
+ * @param dict Structure contenant les données mappées
+ * @param line_num Numéro de la ligne à extraire
+ * @param buffer Buffer de destination
+ * @param buf_size Taille du buffer
+ */
 static inline void get_line_from_mmap(const dict_mmap_t *dict, uint_fast64_t line_num,
                                       char *buffer, size_t buf_size) {
     if (line_num >= dict->num_lines) {
@@ -182,7 +203,12 @@ static inline void get_line_from_mmap(const dict_mmap_t *dict, uint_fast64_t lin
     buffer[len] = '\0';
 }
 
-// Sauvegarde de l'état
+/**
+ * Sauvegarder l'état d'avancement d'un thread
+ *
+ * @param tid Identifiant du thread
+ * @param state État à sauvegarder
+ */
 void save_dict_state(int tid, const dict_resume_t *state) {
     char filename[NEMESIS_MAX_PATH];
     char fullPath[NEMESIS_MAX_PATH];
@@ -195,7 +221,13 @@ void save_dict_state(int tid, const dict_resume_t *state) {
     fclose(f);
 }
 
-// Chargement de l'état
+/**
+ * Charger l'état d'avancement sauvegardé d'un thread
+ *
+ * @param tid Identifiant du thread
+ * @param state Structure à remplir avec l'état chargé
+ * @return -1 si erreur, nombre d'états chargés sinon
+ */
 int load_dict_state(int tid, dict_resume_t *state) {
     char filename[NEMESIS_MAX_PATH];
     char fullPath[NEMESIS_MAX_PATH];
@@ -209,7 +241,12 @@ int load_dict_state(int tid, dict_resume_t *state) {
     return r >= 1;
 }
 
-// Fonction principale d'attaque par dictionnaire
+/**
+ * Lancer une attaque par dictionnaire
+ *
+ * @param dict_filename Chemin du fichier dictionnaire
+ * @return Status de l'attaque
+ */
 NEMESIS_brute_status_t NEMESIS_dictionary_attack(const char *dict_filename) {
     print_slow("Dictionary attack starting...\n",SPEED_PRINT);
 
@@ -253,7 +290,6 @@ NEMESIS_brute_status_t NEMESIS_dictionary_attack(const char *dict_filename) {
                 }
             }
         } else {
-            // Threads de travail
             char word[NEMESIS_MAX_LEN + 1];
             uint_fast64_t start_line = 0;
             uint_fast64_t local_count = 0;
@@ -270,7 +306,6 @@ NEMESIS_brute_status_t NEMESIS_dictionary_attack(const char *dict_filename) {
             uint_fast64_t lines_per_thread = total_lines / (num_display_threads - 1);
             uint_fast64_t my_start;
             if (NEMESIS_config.input.save && start_line > 0) {
-                // Reprise : start_line est déjà ABSOLU
                 my_start = start_line;
             } else {
                 // Exécution normale
@@ -345,6 +380,13 @@ NEMESIS_brute_status_t NEMESIS_dictionary_attack(const char *dict_filename) {
     return NEMESIS_BRUTE_DONE;
 }
 
+/**
+ * Lancer une attaque par dictionnaire avec règles de mutation
+ *
+ * @param dict_filename Chemin du fichier dictionnaire
+ * @param config Configuration des règles de mutation
+ * @return Status de l'attaque
+ */
 NEMESIS_brute_status_t NEMESIS_dictionary_attack_mangling(const char *dict_filename,ManglingConfig config) {
     print_slow("Debut de l'attaque par dictionnaire...\n",SPEED_PRINT);
 
@@ -476,7 +518,9 @@ NEMESIS_brute_status_t NEMESIS_dictionary_attack_mangling(const char *dict_filen
 }
 
 
-// Sauvegarde tous les états des threads
+/**
+ * Sauvegarder l'état de tous les threads actifs
+ */
 void save_dict_thread_states(void) {
     for (int i = 1; i < num_display_threads; i++) {
         if (thread_state[i].count == 0) continue;
@@ -484,6 +528,9 @@ void save_dict_thread_states(void) {
     }
 }
 
+/**
+ * Supprimer tous les fichiers de sauvegarde d'état des threads
+ */
 void delete_dict_thread_states(void) {
     for (int i=0;i<NEMESIS_MAX_THREADS;i++) {
         char filename[NEMESIS_MAX_PATH];

@@ -1,15 +1,21 @@
 //
 // Created by Basti on 27/11/2025.
 //
-#include <stdio.h>
+
+#include "hashSet.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include "hashSet.h"
 
 
 
-// Hash function FNV-1a (rapide et bonne distribution)
+/**
+ * Calculer le hash d'une chaîne de caractères selon l'algorithme FNV-1a
+ * 
+ * @param str La chaîne à hasher
+ * @return La valeur de hash modulo HASHSET_SIZE
+ */
 static inline uint32_t hash_string(const char *str) {
     uint32_t hash = 2166136261u;
     while (*str) {
@@ -19,12 +25,23 @@ static inline uint32_t hash_string(const char *str) {
     return hash % HASHSET_SIZE;
 }
 
+/**
+ * Initialiser un nouveau HashSet vide
+ * 
+ * @param hs Le HashSet à initialiser
+ */
 void hashset_init(HashSet *hs) {
     memset(hs->buckets, 0, sizeof(hs->buckets));
     hs->count = 0;
 }
 
-// Retourne 1 si ajouté (nouveau), 0 si déjà présent
+/**
+ * Ajouter une chaîne au HashSet
+ * 
+ * @param hs Le HashSet dans lequel ajouter
+ * @param str La chaîne à ajouter
+ * @return 1 si la chaîne a été ajoutée, 0 si elle était déjà présente
+ */
 int hashset_add(HashSet *hs,const char *str) {
     uint32_t idx = hash_string(str);
     HashNode *node = hs->buckets[idx];
@@ -37,7 +54,7 @@ int hashset_add(HashSet *hs,const char *str) {
         node = node->next;
     }
 
-    // Ajouter nouveau nœud
+    // Ajouter nouveau noeud
     HashNode *new_node = malloc(sizeof(HashNode));
     new_node->key = strdup(str);
     new_node->next = hs->buckets[idx];
@@ -46,6 +63,11 @@ int hashset_add(HashSet *hs,const char *str) {
     return 1;  // Nouveau
 }
 
+/**
+ * Libérer la mémoire utilisée par un HashSet
+ * 
+ * @param hs Le HashSet à libérer
+ */
 void hashset_free(HashSet *hs) {
     for (int i = 0; i < HASHSET_SIZE; i++) {
         HashNode *node = hs->buckets[i];

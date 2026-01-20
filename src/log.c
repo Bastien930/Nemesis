@@ -2,15 +2,24 @@
 // Created by Basti on 26/11/2025.
 //
 #include "log.h"
+#include "Config.h"
+#include "Utils.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#include "Config.h"
-#include "Utils.h"
+
 
 LogConfig * log_config = NULL;
 
+/**
+ * Initialiser le système de journalisation
+ *
+ * @param filename Nom du fichier de log à créer/ouvrir
+ * @param level Niveau de log initial
+ * @return 1 si succès, -1 si erreur
+ */
 int init_log(const char *filename, int level) { // le level correspond au level initial.
     log_config = malloc(sizeof(LogConfig));
     if (!log_config) { perror("allocation dynamique de init_log"); return -1; }
@@ -25,6 +34,13 @@ int init_log(const char *filename, int level) { // le level correspond au level 
     return 1;
 }
 
+/**
+ * Écrire un message dans le fichier de log
+ *
+ * @param level Niveau de priorité du message
+ * @param message Contenu du message à journaliser
+ * @param location Emplacement d'où provient le message
+ */
 void write_log(LogLevel level, const char *message, const char *location) {
     if (!log_config || !log_config->file) return;
 
@@ -43,6 +59,9 @@ void write_log(LogLevel level, const char *message, const char *location) {
     fflush(log_config->file);
 }
 
+/**
+ * Fermer et libérer les ressources du système de journalisation
+ */
 void close_log(void) {
     if (!log_config)return;
     if (log_config->file) {

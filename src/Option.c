@@ -2,8 +2,9 @@
 // Created by bastien on 10/24/25.
 //
 
-#include "../Include/Option.h"
-#include "../Include/Config.h"
+#include "Option.h"
+#include "Config.h"
+#include "Utils.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -12,8 +13,14 @@
 #include <getopt.h>
 #include <stdbool.h>
 
-#include "Utils.h"
-
+/**
+ * Parser les arguments de la ligne de commande pour configurer l'application
+ *
+ * @param argc Nombre d'arguments passés au programme
+ * @param argv Tableau des arguments passés au programme
+ * @param cfg Pointeur vers la structure de configuration à remplir
+ * @return 2 si demande d'aide affichée, 1 si reprise demandée, 0 si succès, -1 en cas d'erreur
+ */
 int parse_args(int argc, char *argv[], NEMESIS_config_t *cfg) {
     int option;
     int long_index = 0;

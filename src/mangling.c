@@ -41,13 +41,11 @@
 static __thread HashSet hs;
 
 
-// Suffixes numériques populaires
 static const char *numeric_suffixes[] = {
     "1", "123", "1234", "69", "01"
 };
 static const int num_numeric_suffixes = 5;
 
-// Années populaires (observées fréquemment : années récentes + 1990-2000)
 static const char *year_suffixes[] = {
     "2025","2024","2023","2022","2021","2020",
     "2019","2018","2015","2010",
@@ -55,36 +53,33 @@ static const char *year_suffixes[] = {
 };
 static const int num_year_suffixes = 11;
 
-// Suffixes symboles (les symboles réellement rencontrés dans les fuites)
 static const char *symbol_suffixes[] = {
     "!", "?", "$", "#", "@", "*", "."//, "!?","!1"
 };
 static const int num_symbol_suffixes = 7;
 
-// Préfixes observés (moins fréquents que les suffixes mais présents)
 static const char *common_prefixes[] = {
     "123", "!", "@", "#", "$", "_"
 };
 static const int num_common_prefixes = 6;
 
-// Mots / tokens fréquemment combinés (observés dans les fuites francophones/internationales)
 static const char *common_words[] = {
     "admin", "welcome", "master", "super", "motdepasse", "mdp",
     "password", "azerty", "qwerty"
 };
 static const int num_common_words = 9;
 
-// === STRUCTURES ===
-
-
-
 typedef struct {
     int count;
     char words[256][MAX_WORD_LEN];  // tableau statique
 } WordList;
 
-// === FONCTIONS UTILITAIRES ===
 
+/**
+ * Initialiser une nouvelle liste de mots vide
+ * 
+ * @param wl Pointeur vers la structure WordList à initialiser
+ */
 void wordlist_init(WordList *wl) {
     if (!wl) return;
     wl->count = 0;
@@ -100,11 +95,10 @@ static inline void wordlist_add(WordList *wl, const char *word) {
     }
     size_t len = strlen(word);
     if (len >= MAX_WORD_LEN) {
-        len = MAX_WORD_LEN - 1; // tronquer si trop long
+        len = MAX_WORD_LEN - 1;
     }
-    // copie rapide avec memcpy + terminaison manuelle
     memcpy(wl->words[wl->count], word, MAX_WORD_LEN);
-    wl->words[wl->count][len] = '\0';  // sécuriser la terminaison
+    wl->words[wl->count][len] = '\0';
     wl->count++;
 }
 
@@ -177,6 +171,13 @@ static inline void reverse_str(const char *src, char *dest) {
     dest[len] = '\0';
 }
 
+/**
+ * Générer des variations leetspeak d'un mot
+ * 
+ * @param base Mot de base à transformer
+ * @param mode Mode de transformation leetspeak à appliquer
+ * @param tmp Liste temporaire pour stocker les variations
+ */
 void module_leetspeak(const char *base, int mode, WordList *tmp) {
     char buffer[MAX_WORD_LEN];
 
@@ -261,6 +262,12 @@ static inline void apply_cap_last(const char *input, char *output) {
     if (len > 0) output[len - 1] = toupper(output[len - 1]);
 }
 
+/**
+ * Générer des variations de capitalisation d'un mot
+ * 
+ * @param base Mot de base à transformer
+ * @param mode Mode de capitalisation à appliquer
+ */
 void module_capitalization(const char *base, int mode) {
     char buffer[MAX_WORD_LEN];
 
@@ -290,6 +297,11 @@ void module_capitalization(const char *base, int mode) {
 
 // === MODULE 3: SUFFIXES NUMÉRIQUES ===
 
+/**
+ * Ajouter des suffixes numériques à un mot
+ * 
+ * @param base Mot de base auquel ajouter les suffixes
+ */
 void module_numeric_suffixes(const char *base) {
     char buffer[MAX_WORD_LEN];
     for (int i = 0; i < num_numeric_suffixes; i++) {
@@ -300,6 +312,11 @@ void module_numeric_suffixes(const char *base) {
 
 // === MODULE 4: SUFFIXES ANNÉES ===
 
+/**
+ * Ajouter des années en suffixe à un mot
+ * 
+ * @param base Mot de base auquel ajouter les années
+ */
 void module_year_suffixes(const char *base) {
     char buffer[MAX_WORD_LEN];
     for (int i = 0; i < num_year_suffixes; i++) {
@@ -310,6 +327,11 @@ void module_year_suffixes(const char *base) {
 
 // === MODULE 5: SUFFIXES SYMBOLES ===
 
+/**
+ * Ajouter des symboles en suffixe à un mot
+ * 
+ * @param base Mot de base auquel ajouter les symboles
+ */
 void module_symbol_suffixes(const char *base) {
     char buffer[MAX_WORD_LEN];
     for (int i = 0; i < num_symbol_suffixes; i++) {
@@ -320,6 +342,11 @@ void module_symbol_suffixes(const char *base) {
 
 // === MODULE 6: PRÉFIXES ===
 
+/**
+ * Ajouter des préfixes communs à un mot
+ * 
+ * @param base Mot de base auquel ajouter les préfixes
+ */
 void module_prefixes(const char *base) {
     char buffer[MAX_WORD_LEN];
     for (int i = 0; i < num_common_prefixes; i++) {
@@ -330,6 +357,11 @@ void module_prefixes(const char *base) {
 
 // === MODULE 7: RÉPÉTITION ===
 
+/**
+ * Générer des variations avec répétition de caractères
+ * 
+ * @param base Mot de base à modifier
+ */
 void module_repetition(const char *base) {
     char buffer[MAX_WORD_LEN];
     int len = strlen(base);
@@ -352,6 +384,11 @@ void module_repetition(const char *base) {
 
 // === MODULE 8: INVERSION ===
 
+/**
+ * Inverser un mot
+ * 
+ * @param base Mot à inverser
+ */
 void module_reverse(const char *base) {
     char buffer[MAX_WORD_LEN];
     int len = strlen(base);
@@ -365,6 +402,11 @@ void module_reverse(const char *base) {
 
 // === MODULE 9: MOTS COMMUNS ===
 
+/**
+ * Combiner le mot avec des mots communs
+ * 
+ * @param base Mot de base à combiner
+ */
 void module_common_words(const char *base) {
     char buffer[MAX_WORD_LEN];
     for (int i = 0; i < num_common_words; i++) {
@@ -427,6 +469,12 @@ static inline void combine_leet_variant_full(const char *leet_variant, ManglingC
 
 // --- Nouvelle generate_mangled_words factorisée (garde logique priorités) ---
 // Attention le mangling test le mot de passe de départ.
+/**
+ * Générer toutes les variations possibles d'un mot selon la configuration
+ * 
+ * @param base_word Mot de base à transformer
+ * @param config Configuration des règles de transformation à appliquer
+ */
 void generate_mangled_words(const char *base_word, ManglingConfig *config) {
 
     if (is_password_found()) return;
@@ -637,28 +685,19 @@ int NEMESIS_get_iteration_of_mangling(int config) {
 // === EXEMPLE D'UTILISATION ===
 
 void print_usage_example() {
-    //printf("=== MODULE DE MANGLING AVANCÉ ===\n\n");
 
     const char *test_word = "password";
 
-
-    //printf("Mot de base: %s\n\n", test_word);
-    // Test config FAST
-    //printf("--- CONFIG FAST (priorité haute uniquement) ---\n");
     ManglingConfig config_fast = get_config_fast();
     generate_mangled_words(test_word, &config_fast);
     printf("Variations: %lu\n", NEMESIS_hash_get_count());
 
-    // Test config BALANCED
     ManglingConfig config_balanced = get_config_balanced();
     generate_mangled_words(test_word, &config_balanced);
     printf("Variations: %lu\n", NEMESIS_hash_get_count());
 
-    // Test config AGGRESSIVE
-    //printf("\n--- CONFIG AGGRESSIVE (toutes priorités) ---\n");
     ManglingConfig conf_agress = get_config_aggressive();
-    //ManglingConfig conf = get_config_aggressive();
-    //ManglingConfig conf = get_config_aggressive();
+
 
 
     generate_mangled_words(test_word, &conf_agress);

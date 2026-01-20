@@ -1,0 +1,105 @@
+
+.TH NEMESIS 1 "Janvier 2026" "Version 3" "Outils d'analyse"
+.SH NOM
+nemesis \- outil d'analyse pour tests de sécurité (usage autorisé uniquement)
+
+.SH SYNOPSIS
+.B nemesis
+[\-options]
+
+.SH DESCRIPTION
+.B Nemesis
+est un utilitaire destiné aux administrateurs, pentesters autorisés ou chercheurs en sécurité
+pour analyser des fichiers de type shadow ou réaliser des tests contrôlés par dictionnaire.
+
+L'outil doit être utilisé exclusivement dans un cadre légal et avec l'autorisation explicite
+du propriétaire des systèmes analysés.
+
+.SH OPTIONS
+
+.TP
+.B -s, --shadow \fIfile\fR
+Fichier shadow à analyser (obligatoire).  
+Utilisez \fB-\fR pour lire depuis l'entrée standard.
+
+.TP
+.B -w, --wordlist \fIfile\fR
+Fichier wordlist pour une analyse basée sur un dictionnaire.
+
+.TP
+.B --resume
+Reprend l'exécution à partir d'une sauvegarde précédente.
+
+.TP
+.B -m, --mangling \fIconfig\fR
+Définit la stratégie de transformation des entrées :
+\fBfast\fR, \fBbalanced\fR, \fBagressive\fR (défaut : fast).
+
+.TP
+.B -d, --dictionary
+Active le mode dictionnaire.
+
+.TP
+.B -b, --bruteforce
+Active le mode bruteforce.
+
+.TP
+.B -c, --charset \fIpreset|chars\fR
+Définit le charset utilisé.  
+Presets disponibles : \fBdefault\fR, \fBalphanum\fR, \fBnumeric\fR, ou liste explicite de caractères.
+
+.TP
+.B --min \fIn\fR
+Longueur minimale en bruteforce (valeur compilée par défaut : NEMESIS_MIN_LEN).
+
+.TP
+.B --max \fIn\fR
+Longueur maximale en bruteforce (valeur compilée par défaut : NEMESIS_MAX_LEN).
+
+.TP
+.B -t, --threads \fIn\fR
+Nombre de threads utilisés (défaut : 1).
+
+.TP
+.B -o, --output \fIfile\fR
+Fichier de sortie. Le format dépend de l'extension (JSON/CSV/TXT).
+
+.TP
+.B --format \fIjson|csv|txt|xml\fR
+Force un format de sortie. TXT par défaut.
+
+.TP
+.B --log \fIfile\fR
+Active le logging dans un fichier.
+
+.TP
+.B -h, --help
+Affiche l'aide et quitte.
+
+.TP
+.B --version
+Affiche la version et quitte.
+
+.SH EXEMPLES
+
+.IP
+nemesis -s shadow.dump -b --charset "abcd" --output results.json --format json
+
+.IP
+nemesis -s /etc/shadow -w rockyou.txt --mangling fast --log run.log
+
+.IP
+nemesis --resume
+
+.SH NOTES DE SÉCURITÉ
+.LP
+\- Utilisez ce programme uniquement sur des systèmes pour lesquels vous avez une autorisation explicite.  
+\- L’export complet des empreintes est désactivé par défaut.  
+\- Testez en mode simulation avant toute exécution sur un environnement réel.
+
+.SH AUTEUR
+BASTIEN-ALEXIS-ILIAN
+
+.SH VOIR AUSSI
+shadow(5), crypt(3), security(7)
+

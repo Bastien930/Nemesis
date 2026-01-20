@@ -2,36 +2,203 @@
 
 
 #include "Shadow.h"
-
-
-
 #include "Hash_Engine.h"
+#include "log.h"
 
 #include <crypt.h>
 #include <openssl/evp.h>
 #include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include <omp.h>
 
-#include "log.h"
 
-/* === Définition des globals === */
 const char *NEMESIS_hash = NULL;
 const char *NEMESIS_salt = NULL;
 long NEMESIS_hash_count = 0;
-//NEMESIS_hash_compare_fn NEMESIS_compare_fn = NULL;
 
-/* stockage binaire du hash cible / salt */
-//static unsigned char *NEMESIS_hash_bin = NULL;
 static size_t NEMESIS_hash_len = 0;
-//static unsigned char *NEMESIS_salt_bin = NULL;
 static size_t NEMESIS_salt_len = 0;
 
+/**
+ * Comparer deux zones mémoire de manière sécurisée
+ *
+ * @param a Premier buffer à comparer
+ * @param b Second buffer à comparer  
+ * @param len Longueur en octets à comparer
+ * @return 1 si les buffers sont égaux, 0 sinon
+ */
 static inline int fast_eq_memcmp(const void *a, const void *b, size_t len) {
     if (len == 0) return 1;
     return memcmp(a, b, len) == 0;
 }
+
+/**
+ * Vérifier si un mot de passe correspond au hash stocké
+ *
+ * @param password Le mot de passe à vérifier
+ * @return true si le mot de passe correspond, false sinon
+ */
+bool NEMESIS_crypt(const char *password) {
+    struct crypt_data data;
+    data.initialized = 0;
+    char *crypt_res = crypt_r(password, NEMESIS_salt,&data);
+    if (!crypt_res) {char buffer[512];safe_concat(buffer,512,"Erreur lors de crypt pour le mot de passe : ",password);write_log(LOG_WARNING,buffer,"NEMESIS_crypt"); return false;}
+    /* 2) extraire la partie hash encodée (dernier champ après $) */
+    const char *enc_hash = extract_crypt_hash_part(crypt_res);
+
+    if (strlen(enc_hash) != NEMESIS_hash_len) return false;
+    return fast_eq_memcmp(enc_hash,NEMESIS_hash,NEMESIS_hash_len);
+}
+
+
+
+/**
+ * Extraire la partie hash d'un résultat crypt
+ *
+ * @param crypt_res Le résultat de la fonction crypt à analyser
+ * @return Pointeur vers la partie hash ou NULL en cas d'erreur
+ */
+const char *extract_crypt_hash_part(const char *crypt_res) {
+    if (!crypt_res) return NULL;
+    const char *last = strrchr(crypt_res, '$');
+    if (!last) return NULL;
+    return last + 1;
+}
+
+
+/**
+ * Initialiser le moteur de hachage avec une entrée shadow
+ *
+ * @param entry L'entrée shadow contenant les informations de hachage
+ * @return true si l'initialisation réussit, false sinon
+ */
+bool NEMESIS_hash_engine_init(struct NEMESIS_shadow_entry *entry) {
+    if (!entry) {write_log(LOG_ERROR,"Erreur aucune shadow entry impossible d'initilialiser le hash engine","NEMESIS_hash_engine_init"); return false;}
+
+    NEMESIS_hash_engine_reset();
+
+    //const NEMESIS_hash_algo_t NEMESIS_algo_hash = entry->algo;
+    NEMESIS_hash = entry->hash;
+    NEMESIS_salt = entry->salt;
+    NEMESIS_hash_len = strlen(entry->hash);
+    NEMESIS_salt_len = strlen(entry->salt);
+
+    struct crypt_data warmup;
+    memset(&warmup, 0, sizeof(warmup));
+    crypt_r("warmup", "$5$abcd1234$", &warmup);
+
+    return true;
+}
+
+/**
+ * Réinitialiser le moteur de hachage
+ */
+void NEMESIS_hash_engine_reset(void) {
+    NEMESIS_hash_len = NEMESIS_salt_len = 0;
+    NEMESIS_hash = NULL;
+    NEMESIS_salt = NULL;
+    NEMESIS_hash_count = 0;
+}
+
+
+/* SHA256 */
+/*
+static bool sha256_compare_fn(const char *password) {
+    unsigned char buf[256];
+    size_t pwlen = strlen(password);
+    size_t total = NEMESIS_salt_len + pwlen;
+    unsigned char *input = buf;
+
+    if (total > sizeof(buf)) {
+        input = malloc(total);
+        if (!input) return false;
+    }
+
+    // Copie salt+password
+    if (NEMESIS_salt_len) memcpy(input, NEMESIS_salt_bin, NEMESIS_salt_len);
+    memcpy(input + NEMESIS_salt_len, password, pwlen);
+
+    // Au lieu de : salt + password
+
+    //if (NEMESIS_salt_len) memcpy(input, password, pwlen);
+    //memcpy(input + pwlen, NEMESIS_salt_bin, NEMESIS_salt_len);
+
+    // Hash
+    unsigned char digest[EVP_MAX_MD_SIZE];
+    size_t dlen = 0;
+    int ret = evp_hash(EVP_sha256(), input, total, digest, &dlen);  // ← Vérifie le retour !
+
+    if (input != buf) free(input);
+
+    // Vérifications
+    if (ret != 0) return false;          // ← IMPORTANT : vérifie que evp_hash a réussi
+    if (dlen != NEMESIS_hash_len) return false;
+
+    // Debug (à retirer en prod)
+    if (strcmp(password, "Password123") == 0) {
+        printf("[DEBUG] Match test:\n");
+        printf("  Computed: ");
+        for (size_t i = 0; i < dlen; i++) printf("%02x", digest[i]);
+        printf("\n  Expected: ");
+        for (size_t i = 0; i < NEMESIS_hash_len; i++) printf("%02x", NEMESIS_hash[i]);
+        printf("\n  Result: %d\n", fast_eq_memcmp(digest, NEMESIS_hash_bin, dlen));
+    }
+
+    return fast_eq_memcmp(digest, NEMESIS_hash_bin, dlen);
+}
+*/
+/* SHA512 */
+/*
+static bool sha512_compare_fn(const char *password) {
+    unsigned char buf[512];
+    size_t pwlen = strlen(password);
+    size_t total = NEMESIS_salt_len + pwlen;
+    unsigned char *input = buf;
+
+    if (total > sizeof(buf)) {
+        input = malloc(total);
+        if (!input) return false;
+    }
+    if (NEMESIS_salt_len) memcpy(input, NEMESIS_salt_bin, NEMESIS_salt_len);
+    memcpy(input + NEMESIS_salt_len, password, pwlen);
+
+    unsigned char digest[EVP_MAX_MD_SIZE];
+    size_t dlen = 0;
+    evp_hash(EVP_sha512(), input, total, digest, &dlen);
+
+    if (input != buf) free(input);
+    if (dlen != NEMESIS_hash_len) return false;
+
+    return fast_eq_memcmp(digest,NEMESIS_hash_bin,dlen);
+}
+
+ MD5 (exemple)
+
+static bool md5_compare_fn(const char *password) {
+    unsigned char buf[128];
+    size_t pwlen = strlen(password);
+    size_t total = NEMESIS_salt_len + pwlen;
+    unsigned char *input = buf;
+    if (total > sizeof(buf)) {
+        input = malloc(total);
+        if (!input) return false;
+    }
+    if (NEMESIS_salt_len) memcpy(input, NEMESIS_salt_bin, NEMESIS_salt_len);
+    memcpy(input + NEMESIS_salt_len, password, pwlen);
+
+    unsigned char digest[EVP_MAX_MD_SIZE];
+    size_t dlen = 0;
+    evp_hash(EVP_md5(), input, total, digest, &dlen);
+
+    if (input != buf) free(input);
+    if (dlen != NEMESIS_hash_len) return false;
+
+    return fast_eq_memcmp(digest,NEMESIS_hash_bin,dlen);
+}
+ fallback
+static bool unknown_compare_fn(const char *password) {
+    (void)password;
+    return false;
+}*/
 
 
 /* helper : convertit une chaîne hex -> binaire
@@ -143,180 +310,3 @@ static int evp_hash(const EVP_MD *md,
 }*/
 
 /* === Fonctions de hash concrètes (une par algo) === */
-
-bool NEMESIS_crypt(const char *password) {
-    struct crypt_data data;
-    data.initialized = 0;
-    char *crypt_res = crypt_r(password, NEMESIS_salt,&data);
-    if (!crypt_res) {char buffer[512];safe_concat(buffer,512,"Erreur lors de crypt pour le mot de passe : ",password);write_log(LOG_WARNING,buffer,"NEMESIS_crypt"); return false;}
-    /* 2) extraire la partie hash encodée (dernier champ après $) */
-    const char *enc_hash = extract_crypt_hash_part(crypt_res);
-
-    if (strlen(enc_hash) != NEMESIS_hash_len) return false;
-    return fast_eq_memcmp(enc_hash,NEMESIS_hash,NEMESIS_hash_len);
-}
-
-/* SHA256 */
-/*
-static bool sha256_compare_fn(const char *password) {
-    unsigned char buf[256];
-    size_t pwlen = strlen(password);
-    size_t total = NEMESIS_salt_len + pwlen;
-    unsigned char *input = buf;
-
-    if (total > sizeof(buf)) {
-        input = malloc(total);
-        if (!input) return false;
-    }
-
-    // Copie salt+password
-    if (NEMESIS_salt_len) memcpy(input, NEMESIS_salt_bin, NEMESIS_salt_len);
-    memcpy(input + NEMESIS_salt_len, password, pwlen);
-
-    // Au lieu de : salt + password
-
-    //if (NEMESIS_salt_len) memcpy(input, password, pwlen);
-    //memcpy(input + pwlen, NEMESIS_salt_bin, NEMESIS_salt_len);
-
-    // Hash
-    unsigned char digest[EVP_MAX_MD_SIZE];
-    size_t dlen = 0;
-    int ret = evp_hash(EVP_sha256(), input, total, digest, &dlen);  // ← Vérifie le retour !
-
-    if (input != buf) free(input);
-
-    // Vérifications
-    if (ret != 0) return false;          // ← IMPORTANT : vérifie que evp_hash a réussi
-    if (dlen != NEMESIS_hash_len) return false;
-
-    // Debug (à retirer en prod)
-    if (strcmp(password, "Password123") == 0) {
-        printf("[DEBUG] Match test:\n");
-        printf("  Computed: ");
-        for (size_t i = 0; i < dlen; i++) printf("%02x", digest[i]);
-        printf("\n  Expected: ");
-        for (size_t i = 0; i < NEMESIS_hash_len; i++) printf("%02x", NEMESIS_hash[i]);
-        printf("\n  Result: %d\n", fast_eq_memcmp(digest, NEMESIS_hash_bin, dlen));
-    }
-
-    return fast_eq_memcmp(digest, NEMESIS_hash_bin, dlen);
-}
-*/
-/* SHA512 */
-/*
-static bool sha512_compare_fn(const char *password) {
-    unsigned char buf[512];
-    size_t pwlen = strlen(password);
-    size_t total = NEMESIS_salt_len + pwlen;
-    unsigned char *input = buf;
-
-    if (total > sizeof(buf)) {
-        input = malloc(total);
-        if (!input) return false;
-    }
-    if (NEMESIS_salt_len) memcpy(input, NEMESIS_salt_bin, NEMESIS_salt_len);
-    memcpy(input + NEMESIS_salt_len, password, pwlen);
-
-    unsigned char digest[EVP_MAX_MD_SIZE];
-    size_t dlen = 0;
-    evp_hash(EVP_sha512(), input, total, digest, &dlen);
-
-    if (input != buf) free(input);
-    if (dlen != NEMESIS_hash_len) return false;
-
-    return fast_eq_memcmp(digest,NEMESIS_hash_bin,dlen);
-}
-
- MD5 (exemple)
-
-static bool md5_compare_fn(const char *password) {
-    unsigned char buf[128];
-    size_t pwlen = strlen(password);
-    size_t total = NEMESIS_salt_len + pwlen;
-    unsigned char *input = buf;
-    if (total > sizeof(buf)) {
-        input = malloc(total);
-        if (!input) return false;
-    }
-    if (NEMESIS_salt_len) memcpy(input, NEMESIS_salt_bin, NEMESIS_salt_len);
-    memcpy(input + NEMESIS_salt_len, password, pwlen);
-
-    unsigned char digest[EVP_MAX_MD_SIZE];
-    size_t dlen = 0;
-    evp_hash(EVP_md5(), input, total, digest, &dlen);
-
-    if (input != buf) free(input);
-    if (dlen != NEMESIS_hash_len) return false;
-
-    return fast_eq_memcmp(digest,NEMESIS_hash_bin,dlen);
-}
- fallback
-static bool unknown_compare_fn(const char *password) {
-    (void)password;
-    return false;
-}*/
-
-/* === API === */
-const char *extract_crypt_hash_part(const char *crypt_res) {
-    if (!crypt_res) return NULL;
-    /* find last '$' */
-    const char *last = strrchr(crypt_res, '$');
-    if (!last) return NULL;
-    return last + 1;
-}
-
-
-bool NEMESIS_hash_engine_init(struct NEMESIS_shadow_entry *entry) {
-    if (!entry) {write_log(LOG_ERROR,"Erreur aucune shadow entry impossible d'initilialiser le hash engine","NEMESIS_hash_engine_init"); return false;}
-
-    NEMESIS_hash_engine_reset();
-
-    //const NEMESIS_hash_algo_t NEMESIS_algo_hash = entry->algo;
-    NEMESIS_hash = entry->hash;
-    NEMESIS_salt = entry->salt;
-    NEMESIS_hash_len = strlen(entry->hash);
-    NEMESIS_salt_len = strlen(entry->salt);
-
-    struct crypt_data warmup;
-    memset(&warmup, 0, sizeof(warmup));
-    crypt_r("warmup", "$5$abcd1234$", &warmup);
-
-
-    /*if (base64_to_bin(NEMESIS_hash, &NEMESIS_hash_bin, &NEMESIS_hash_len) != 0) {
-        printf("erreur de conversion base64\n");
-        return false;
-    }
-
-    if (NEMESIS_salt && hex_to_bin(NEMESIS_salt, &NEMESIS_salt_bin, &NEMESIS_salt_len) != 0) {
-        free(NEMESIS_hash_bin); NEMESIS_hash_bin = NULL;
-        printf("erreur lros de la conversion du salt \n");
-        return false;
-    }*/
-
-    /*switch (NEMESIS_algo_hash) {
-        case NEMESIS_HASH_MD5:
-            NEMESIS_compare_fn = md5_compare_fn;
-            break;
-        case NEMESIS_HASH_SHA256:
-            NEMESIS_compare_fn = sha256_compare_fn;
-            break;
-        case NEMESIS_HASH_SHA512:
-            NEMESIS_compare_fn = sha512_compare_fn;
-            break;
-        default:
-            NEMESIS_compare_fn = unknown_compare_fn;
-            break;
-    }*/
-
-    return true;
-}
-
-void NEMESIS_hash_engine_reset(void) {
-    //if (NEMESIS_hash_bin) { free(NEMESIS_hash_bin); NEMESIS_hash_bin = NULL; }
-    //if (NEMESIS_salt_bin) { free(NEMESIS_salt_bin); NEMESIS_salt_bin = NULL; }
-    NEMESIS_hash_len = NEMESIS_salt_len = 0;
-    NEMESIS_hash = NULL;
-    NEMESIS_salt = NULL;
-    //NEMESIS_compare_fn = NULL;
-    NEMESIS_hash_count = 0;
-}

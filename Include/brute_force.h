@@ -18,11 +18,6 @@ NEMESIS_brute_status_t NEMESIS_bruteforce(void) ;
 NEMESIS_brute_status_t NEMESIS_bruteforce_mangling(ManglingConfig config) ;
 void save_brute_thread_states(void);
 void delete_brut_thread_states(void) ;
-#include <stdio.h>
-#include <string.h>
-
-
-
 int build_charset(char *out, size_t out_size,NEMESIS_charset_preset_t preset,const char *custom_charset);
 
 #endif //NEMESIS_BRUTE_FORCE_H

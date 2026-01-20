@@ -2,7 +2,10 @@
 // Created by bastien on 10/24/25.
 //
 
-#include "../Include/Config.h"
+#include "Config.h"
+#include "brute_force.h"
+#include "Dictionnary.h"
+#include "Utils.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -12,12 +15,13 @@
 #include <zlib.h>
 #include <stdlib.h>
 
-#include "brute_force.h"
-#include "Dictionnary.h"
-#include "log.h"
-#include "Utils.h"
 
 
+/**
+ * Initialiser la configuration avec les valeurs par défaut
+ * 
+ * @param cfg Pointeur vers la structure de configuration à initialiser
+ */
 void NEMESIS_config_init_default(NEMESIS_config_t *cfg){
     if (!cfg) return;
     memset(cfg, 0, sizeof(*cfg));
@@ -61,6 +65,14 @@ void NEMESIS_config_init_default(NEMESIS_config_t *cfg){
   -6   = invalid threads value
   -7   = logging enabled but no log file
 */
+/**
+ * Valider la configuration actuelle
+ * 
+ * @param cfg Configuration à valider
+ * @param errbuf Buffer pour stocker le message d'erreur
+ * @param errlen Taille du buffer d'erreur
+ * @return 0 si valide, code d'erreur négatif sinon
+ */
 int NEMESIS_config_validate(const NEMESIS_config_t *cfg, char *errbuf, size_t errlen) {
     if (!cfg) {
         if (errbuf && errlen) snprintf(errbuf, errlen, "config is NULL");
@@ -158,6 +170,11 @@ int NEMESIS_config_validate(const NEMESIS_config_t *cfg, char *errbuf, size_t er
  * progname = argv[0].
  * cette fonction est appeler si on detecte l'option -h ou --help peut import les autres options.
 */
+/**
+ * Afficher l'aide et les options disponibles
+ * 
+ * @param progname Nom du programme à afficher
+ */
 void NEMESIS_print_usage(const char *progname) {
     if (!progname) progname = "NEMESIS_tool";
 
@@ -178,9 +195,8 @@ void NEMESIS_print_usage(const char *progname) {
     puts("      --max <n>              Longueur maximale pour génération brutforce (défaut : " STR(NEMESIS_MAX_LEN) ").");
     puts("  -t, --threads <n>          Nombre de threads (défaut : 1).");
     puts("  -o, --output <file>        Fichier de sortie (JSON/CSV/TXT selon extension).");
-    puts("      --format <json|csv|txt> Forcer le format de sortie (TXT si omis).");
+    puts("      --format <json|csv|txt|xml> Forcer le format de sortie (TXT si omis).");
     puts("  --log <file>               Activer logging vers fichier (doit être écrit).");
-    puts("  --enable-gpu               Activer backend GPU (si disponible).");
     puts("  -h, --help                 Afficher cette aide et quitter.");
     puts("  --version                  Afficher la version et quitter.");
     puts("");
@@ -192,8 +208,9 @@ void NEMESIS_print_usage(const char *progname) {
     puts("");
 
     puts("Exemples :");
-    printf("  %s -s shadow.dump -w words.txt -d -o results.json\n", progname);
-    printf("  %s -s /etc/shadow -w rockyou.txt -m 'leet,append:123' --anonymize --log run.log\n", progname);
+    printf("  %s -s shadow.dump -b --charset \"abcd\" --output results.json --format json\n", progname);
+    printf("  %s -s /etc/shadow -w rockyou.txt --mangling fast --log run.log\n", progname);
+    printf("  %s --resume\n", progname);
     puts("");
 
     puts("Notes de sécurité :");
@@ -203,35 +220,46 @@ void NEMESIS_print_usage(const char *progname) {
     puts("");
     fflush(stdout);
 }
+//.TP option indentée
+// .SH titre
+//\fB gras et I italique
+//vim Nemesis.1
+//sudo cp Nemesis.1 /usr/share/man/man1/
+// mandb
+//man nemesis
 
 
+
+/**
+ * Sauvegarder la configuration dans un fichier
+ * 
+ * @param file Fichier de destination ouvert en écriture
+ * @param config Configuration à sauvegarder
+ * @return 0 si succès, -1 si erreur
+ */
 int NEMESIS_save_config(FILE *file, NEMESIS_config_t *config) {
     if (!file || !config) return -1;
 
     struct NEMESIS_config_file config_file;
 
-    // Initialiser à zéro pour éviter les données non initialisées
     memset(&config_file, 0, sizeof(config_file));
 
     // En-tête
     config_file.magic = NEMESIS_CONFIG_MAGIC;
     config_file.version = NEMESIS_VERSION;
 
-    // Copier les structures (qui ne contiennent QUE des tableaux, pas de pointeurs)
     config_file.input = config->input;
     config_file.attack = config->attack;
     config_file.output = config->output;
     config_file.system = config->system;
     config_file.meta_version = config->meta.version;
 
-    // Calculer le checksum sur toutes les données SAUF le champ checksum lui-même
     size_t data_size = sizeof(config_file) - sizeof(config_file.checksum);
     uLong checksum = crc32(0uL, Z_NULL, 0);
     checksum = crc32(checksum, (const Bytef *)&config_file, data_size);
 
     config_file.checksum = checksum;
 
-    // Écrire la structure complète
     if (fwrite(&config_file, sizeof(config_file), 1, file) != 1) {
         return -1;
     }
@@ -241,6 +269,12 @@ int NEMESIS_save_config(FILE *file, NEMESIS_config_t *config) {
     return 0;
 }
 
+/**
+ * Charger une configuration depuis un fichier
+ * 
+ * @param config Structure où charger la configuration
+ * @return 0 si succès, -1 si erreur
+ */
 int NEMESIS_load_config(NEMESIS_config_t *config) {
     char full_path[NEMESIS_MAX_PATH];
     PATH_JOIN(full_path,NEMESIS_MAX_PATH,NEMESIS_config.output.config_dir,NEMESIS_STOPPED_FILE);
@@ -249,7 +283,6 @@ int NEMESIS_load_config(NEMESIS_config_t *config) {
 
     struct NEMESIS_config_file config_file;
 
-    // Lire la structure complète
     if (fread(&config_file, sizeof(config_file), 1, file) != 1) {
         fclose(file);
         return -1;
@@ -273,7 +306,7 @@ int NEMESIS_load_config(NEMESIS_config_t *config) {
 
     // Vérifier le checksum
     __uint32_t saved_checksum = config_file.checksum;
-    config_file.checksum = 0;  // Mettre à zéro pour recalculer
+    config_file.checksum = 0;
 
     size_t data_size = sizeof(config_file) - sizeof(config_file.checksum);
     uLong calculated_checksum = crc32(0uL, Z_NULL, 0);
@@ -285,7 +318,6 @@ int NEMESIS_load_config(NEMESIS_config_t *config) {
         return -1;
     }
 
-    // Restaurer les données dans la config
     config->input = config_file.input;
     config->attack = config_file.attack;
     config->output = config_file.output;
@@ -295,7 +327,6 @@ int NEMESIS_load_config(NEMESIS_config_t *config) {
 
 
 
-    // Restaurer les pointeurs constants de meta (pas sauvegardés)
     config->meta.build_date = NEMESIS_BUILD_DATE;
     config->meta.author = NEMESIS_AUTHOR;
 
@@ -304,6 +335,9 @@ int NEMESIS_load_config(NEMESIS_config_t *config) {
 
 
 
+/**
+ * Sauvegarder la configuration de manière sécurisée avec confirmation
+ */
 void NEMESIS_safe_save_config(void) {
     // Vérifier si un fichier existe déjà
     char full_path[NEMESIS_MAX_PATH];
@@ -337,48 +371,3 @@ void NEMESIS_safe_save_config(void) {
 
     PRINT_SLOW_MACRO(SPEED_PRINT,"Configuration sauvegardée dans '%s'\n", NEMESIS_STOPPED_FILE);
 }
-
-/*int NEMESIS_save_config(FILE *file,NEMESIS_config_t *config) {
-    if (!file || !config) return -1;
-
-    struct NEMESIS_config_file config_file;
-
-    config_file.magic   = NEMESIS_CONFIG_MAGIC;
-    config_file.version = NEMESIS_VERSION;
-    config_file.NEMESIS_config = *config;
-
-    printf("NEMESIS_config : %s\n",config_file.NEMESIS_config.input.shadow_file);
-    uLong checksum = crc32(0uL, Z_NULL, 0);
-    checksum = crc32(checksum,(const Bytef *)&config_file.NEMESIS_config,sizeof(NEMESIS_config_t));
-
-    config_file.checksum = checksum;
-
-    if (fwrite(&config_file, sizeof(config_file), 1, file) != 1)
-        return -1;
-
-    fclose(file);
-    return 0;
-}*/
-
-
-/*int NEMESIS_load_config(FILE *file,NEMESIS_config_t *config) { // la fonctrion appelante devra ouvrir le fichier
-
-    if (!file || !config) return -1;
-
-    struct NEMESIS_config_file config_file;
-    fread(&config_file, sizeof(config_file), 1, file);
-    fclose(file);
-
-    if (config_file.magic!=NEMESIS_CONFIG_MAGIC)return -1;
-    if (config_file.version!=NEMESIS_VERSION)return -1;
-
-    uLong checksum = crc32(0uL,Z_NULL,0);
-    checksum = crc32(checksum,(const Bytef *)&config_file.NEMESIS_config,sizeof(NEMESIS_config_t));
-
-    if (checksum!=config_file.checksum)return -1;
-
-    *config = config_file.NEMESIS_config;
-    return 0;
-
-}*/
-

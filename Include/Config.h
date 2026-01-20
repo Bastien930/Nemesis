@@ -41,8 +41,7 @@ NEMESIS_MANGLING_AGGRESSIVE))
 #define NEMESIS_BUILD_DATE __DATE__ " " __TIME__
 #define NEMESIS_AUTHOR "BASTIEN-ALEXIS-ILIAN"
 #define NEMESIS_ERRLEN 2048
-#define DIR_OF_EXE "/proc/self/"
-#define DIR_OF_APP
+
 
 
 typedef enum {

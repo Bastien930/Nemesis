@@ -1,24 +1,38 @@
 //
 // Created by bastien on 10/24/25.
 //
-#include "../Include/Shadow.h"
+#include "Shadow.h"
+#include "Hash_Engine.h"
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 
-#include "Hash_Engine.h"
 
+/**
+ * Dupliquer une chaîne de caractères de manière sécurisée
+ *
+ * @param s La chaîne à dupliquer
+ * @return Une nouvelle copie de la chaîne ou NULL en cas d'erreur
+ */
 static char *strdup_safe(const char *s) {
-    if (!s) return NULL;             // protection contre NULL
-    size_t n = strlen(s) + 1;       // +1 pour '\0'
-    char *p = malloc(n);             // allocation
+    if (!s) return NULL;
+    size_t n = strlen(s) + 1;
+    char *p = malloc(n);
     if (!p) return NULL;             // malloc failed
-    memcpy(p, s, n);                 // copie mémoire complète (y compris '\0')
+    memcpy(p, s, n);
     return p;
 }
 
+/**
+ * Nettoyer les ressources en cas d'échec
+ *
+ * @param entry L'entrée shadow à libérer
+ * @param line_copy La ligne à libérer
+ * @return NULL
+ */
 struct NEMESIS_shadow_entry *fail_cleanup(struct NEMESIS_shadow_entry *entry, char *line_copy) {
     if (entry) {
         if (entry->username) free(entry->username);
@@ -31,13 +45,13 @@ struct NEMESIS_shadow_entry *fail_cleanup(struct NEMESIS_shadow_entry *entry, ch
 }
 
 
-/*
- * a chaque fois que tu voudra copier utilise strdup_safe pour just allouer de la mémoire et copier les donnes dans le nouvelle espace memoire.
- * param const char *line : line du fichier shadow
- * utilise strtok pour separer les lignes au $
- * renvoie l'adresse memoire de la structure rempli.
- * ps : le type d'algo est un enum dans le fichier Shadow.h
-*/
+
+/**
+ * Parser une ligne du fichier shadow
+ *
+ * @param line La ligne à parser
+ * @return Une structure contenant les informations parsées ou NULL en cas d'erreur
+ */
 struct NEMESIS_shadow_entry *NEMESIS_parse_shadow_line(const char *line) {
     if (!line) return NULL;
     char *line_copy = strdup_safe(line);
@@ -90,6 +104,12 @@ struct NEMESIS_shadow_entry *NEMESIS_parse_shadow_line(const char *line) {
     return entry;
 }
 
+/**
+ * Déterminer l'algorithme de hachage à partir de son identifiant
+ *
+ * @param str L'identifiant de l'algorithme
+ * @return L'énumération correspondant à l'algorithme ou NEMESIS_HASH_UNKNOWN si non reconnu
+ */
 NEMESIS_hash_algo_t getAlgo(char *str) {
     if (!str) return NEMESIS_HASH_UNKNOWN;
 
@@ -124,6 +144,12 @@ NEMESIS_hash_algo_t getAlgo(char *str) {
     return NEMESIS_HASH_UNKNOWN;
 }
 
+/**
+ * Obtenir la représentation textuelle d'un algorithme
+ *
+ * @param algo L'algorithme dont on veut le nom
+ * @return Le nom de l'algorithme sous forme de chaîne
+ */
 const char* getAlgoString(NEMESIS_hash_algo_t algo) {
     switch (algo) {
         case NEMESIS_HASH_MD5:
@@ -154,6 +180,12 @@ const char* getAlgoString(NEMESIS_hash_algo_t algo) {
 }
 
 
+/**
+ * Vérifier si un algorithme est implémenté
+ *
+ * @param algo L'algorithme à vérifier
+ * @return true si l'algorithme est implémenté, false sinon
+ */
 bool isAlgoImplemented(NEMESIS_hash_algo_t algo) {
     switch(algo) {
         case NEMESIS_HASH_MD5:
@@ -176,11 +208,11 @@ bool isAlgoImplemented(NEMESIS_hash_algo_t algo) {
 }
 
 
-    /*
- * libere les champs de la strcuture passer en parametre.
- * libere la structure passer en parametre.
- * return : void.
-*/
+/**
+ * Libérer la mémoire d'une entrée shadow
+ *
+ * @param to_free L'entrée à libérer
+ */
 void NEMESIS_free_shadow_entry(struct NEMESIS_shadow_entry *to_free){
     if (!to_free) return;
     if (to_free->username) free(to_free->username);

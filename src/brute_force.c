@@ -6,30 +6,25 @@
 #include "Config.h"
 #include "Utils.h"
 #include "log.h"
-
+#include "Hash_Engine.h"
+#include "Mangling.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "../Include/brute_force.h"
-
 #include <errno.h>
-#include <limits.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/stat.h>
 
-#include "Hash_Engine.h"
-#include "main.h"
-#include "Mangling.h"
+
 
 static inline void construire_mot_depuis_index(long long n,char *mot,const char *charset,int b, int max_len);
 static inline void increment_word(char *word,int *indexes,const char *charset,int b,int *length,int max_len) ;
 
 uint_fast64_t total;
 
-// line de cache unique.
 
 typedef struct {
     int length;
@@ -88,6 +83,13 @@ static void print_multi_progress(uint_fast64_t total) {
 
 
 
+/**
+ * Charger l'état sauvegardé d'un thread
+ *
+ * @param tid Identifiant du thread
+ * @param state Structure de données pour stocker l'état chargé
+ * @return 1 si chargement réussi, 0 sinon
+ */
 int load_state_from_file(int tid, brute_resume_t *state)
 {
     char filename[NEMESIS_MAX_PATH];
@@ -103,6 +105,11 @@ int load_state_from_file(int tid, brute_resume_t *state)
 }
 
 
+/**
+ * Exécuter une attaque par force brute
+ *
+ * @return Status de l'attaque (DONE, ERROR, INTERRUPTED)
+ */
 NEMESIS_brute_status_t NEMESIS_bruteforce(void) {
 
     print_slow("Debut de l'attaque Bruteforce...\n",SPEED_PRINT);
@@ -185,9 +192,7 @@ NEMESIS_brute_status_t NEMESIS_bruteforce(void) {
                 word[NEMESIS_config.attack.min_len] = '\0';
                 length = NEMESIS_config.attack.min_len;
                 printf("word : %s\n",word);
-                // =========================
-                // DÉCALAGE INITIAL (IMPORTANT)
-                // =========================
+                // DÉCALAGE INITIAL
                 for (int i = 1; i < tid; i++) {
                     increment_word(word, indexes, caracteres, b, &length, NEMESIS_MAX_LEN);
                 }
@@ -233,11 +238,7 @@ NEMESIS_brute_status_t NEMESIS_bruteforce(void) {
         }
     }
 
-
-    // =========================
-    // SAUVEGARDE ET FIN
-    // =========================
-
+    //Sauvegarde
     end_time();
     if (interrupt_requested) {
         char res[64];
@@ -260,6 +261,12 @@ NEMESIS_brute_status_t NEMESIS_bruteforce(void) {
 }
 
 
+/**
+ * Exécuter une attaque par force brute avec mangling
+ *
+ * @param config Configuration des règles de mangling à appliquer
+ * @return Status de l'attaque (DONE, ERROR, INTERRUPTED)
+ */
 NEMESIS_brute_status_t NEMESIS_bruteforce_mangling(ManglingConfig config) {
 
     print_slow("Debut de l'attaque Bruteforce...\n",SPEED_PRINT);
@@ -341,9 +348,7 @@ NEMESIS_brute_status_t NEMESIS_bruteforce_mangling(ManglingConfig config) {
                 word[0] = caracteres[0];
                 word[1] = '\0';
 
-                // =========================
-                // DÉCALAGE INITIAL (IMPORTANT)
-                // =========================
+                // DÉCALAGE INITIAL
                 for (int i = 1; i < tid; i++) {
                     increment_word(word, indexes, caracteres, b, &length, NEMESIS_MAX_LEN);
                 }
@@ -390,10 +395,7 @@ NEMESIS_brute_status_t NEMESIS_bruteforce_mangling(ManglingConfig config) {
     }
 
 
-    // =========================
-    // SAUVEGARDE ET FIN
-    // =========================
-
+    //Sauvegarde
     end_time();
     if (interrupt_requested) {
         char res[64];
@@ -416,6 +418,9 @@ NEMESIS_brute_status_t NEMESIS_bruteforce_mangling(ManglingConfig config) {
 }
 
 
+/**
+ * Sauvegarder l'état de progression de chaque thread
+ */
 void save_brute_thread_states(void) {
     for (int i = 1; i < num_display_threads; i++) {
         if (thread_state[i].count == 0)
@@ -433,6 +438,9 @@ void save_brute_thread_states(void) {
     }
 }
 
+/**
+ * Supprimer les fichiers de sauvegarde d'état des threads
+ */
 void delete_brut_thread_states(void) {
     for (int i=0;i<NEMESIS_MAX_THREADS;i++) {
         char filename[NEMESIS_MAX_PATH];
@@ -444,56 +452,15 @@ void delete_brut_thread_states(void) {
 }
 
 
-
-
-/*void NEMESIS_bruteforce_mangling(ManglingConfig *config) {
-
-    char caracteres[256];
-
-    int len = build_charset(caracteres, sizeof(caracteres),
-                            NEMESIS_config.attack.charset_preset,
-                            NEMESIS_config.attack.charset_custom);
-
-    if (len < 0) { write_log(LOG_ERROR,"Erreur lors de l'initialisation du charset","brutforce");return;    }
-
-    const int b = len;
-    const int length = NEMESIS_MAX_LEN;
-    const long long total = puissance(len,NEMESIS_MAX_LEN);
-    const int mangling_itération = NEMESIS_GET_ITERATION_OF_MANGLING(NEMESIS_config.attack.mangling_config);
-
-    #pragma omp parallel
-    {
-        char word[NEMESIS_MAX_LEN+1];
-        word[length] = '\0';
-
-    #pragma omp for schedule(static)
-        for (long long n = 0; n < total; n++) {
-
-            if (is_password_found()) continue;
-
-            construire_mot_depuis_index(n, word, caracteres, b, length);
-
-            generate_mangled_words(word,config);// le mangling verifie le mot de base...
-            //if (n==5100000) printf("%d : %s\n",n,word);
-
-            long long count = NEMESIS_hash_get_count();
-            if (count%10000==0) {
-                #pragma omp critical
-                {
-                    print_progress_bar(count*mangling_itération,total*mangling_itération,word,false);
-                }
-            }
-        }
-    }
-    char last_word[NEMESIS_MAX_LEN+1] = {'\0'};
-    if (!is_password_found()) construire_mot_depuis_index(total,last_word,caracteres,b,length);
-    else get_found_password(last_word,NEMESIS_MAX_LEN+1);
-    print_progress_bar(total, total, last_word, true);
-
-    printf("total : %llu\n",total);
-}*/
-
-
+/**
+ * Construire un jeu de caractères selon le preset choisi
+ * 
+ * @param out Buffer de sortie pour le charset
+ * @param out_size Taille du buffer de sortie
+ * @param preset Type de charset prédéfini à utiliser
+ * @param custom_charset Charset personnalisé si preset est CUSTOM
+ * @return Nombre de caractères dans le charset ou erreur si négatif
+ */
 int build_charset(char *out, size_t out_size,
                   NEMESIS_charset_preset_t preset,
                   const char *custom_charset)
@@ -503,7 +470,7 @@ int build_charset(char *out, size_t out_size,
     switch (preset) {
 
         case NEMESIS_CHARSET_PRESET_DEFAULT:
-            // ASCII imprimable (32 à 126)
+            // ASCII imprimable (33 à 126) pas l'espace
             for (int c = 33; c <= 126; c++) {
                 if (pos + 1 >= out_size) return -1;
                 out[pos++] = (char)c;
@@ -534,43 +501,9 @@ int build_charset(char *out, size_t out_size,
             return -4;
     }
 
-    out[pos] = '\0';  // terminaison string C
+    out[pos] = '\0';
     return pos;       // retourne la taille
 }
-
-
-/*static inline void construire_mot_depuis_index(long long n,char *mot,const char *charset,int b, int max_len)
-{
-    int longueur = 1;
-    long long plage = b;
-    long long idx = n;
-
-    // Calcul de la longueur du mot
-    while (idx >= plage && longueur < max_len) {
-        idx -= plage;
-        longueur++;
-        plage *= b;
-    }
-    // piur 95
-    //0-95 longeur 1
-    // 96-9025 longeur 2
-    //9025-857 375 longeur 3
-    //857 375-81 450 625 longeur 4
-
-    mot[longueur] = '\0';
-
-    // Construction du mot (base b)
-    for (int i = longueur - 1; i >= 0; i--) {
-        mot[i] = charset[idx % b];
-        idx /= b;
-    }
-    /* 7809
-     * caractere 19.
-     * caractere 82.
-     * reste 0 donc fin.
-     *
-    */
-//}
 
 static inline void increment_word(char *word,int *indexes,const char *charset,int b,int *length,int max_len) {
     int pos = 0;
@@ -593,27 +526,3 @@ static inline void increment_word(char *word,int *indexes,const char *charset,in
         word[*length] = '\0';
     }
 }
-
-
-//a pointage = 0
-//b pointage = 0
-//c pointage = 0
-//aa pointage = 1
-//ab pointage = 1
-//ac pointage = 1
-//ba pointage = 1 Retour arriere
-//bb pointage = 1
-//bc pointage = 1
-//ca pointage = 1
-//cb pointage = 1
-//cc pointage = 1
-//aaa pointage = 2
-//aab pointage = 2
-//aac pointage = 2
-//aba pointage = 2 Retour arriere
-//abb pointage = 2
-//abc pointage = 2
-//aca pointage = 2 Retour arriere
-//acb pointage = 2
-//acc pointage = 2
-//baa pointage = 2 Retour arriere *2

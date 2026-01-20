@@ -18,11 +18,12 @@ void print_banner(void);
 #include <stdbool.h>
 
 #define MAX_WORD_LEN 256
+#define RED   "\x1b[31m"
+#define RESET "\x1b[0m"
 #define LL(x) (long long)(x)
 
 #define STR2(x) #x
 #define STR(x) STR2(x) // macro préprocesseur
-
 #define PRINT_SLOW_MACRO(delay, fmt, ...) do { \
 char __buf[512]; \
 snprintf(__buf, sizeof(__buf), fmt, ##__VA_ARGS__); \

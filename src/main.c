@@ -2,32 +2,29 @@
 // Created by bastien on 10/21/25.
 //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <getopt.h>
-#include <time.h>
-#include <signal.h>
-#include <string.h>
-#include "../Include/main.h"
 
-#include "../Include/Config.h"
-#include "../Include/Option.h"
-#include "../Include/Utils.h"
-#include "../Include/Hash_Engine.h"
-#include "../Include/Mangling.h"
-#include "../Include/log.h"
-#include <unistd.h>
-#include <crypt.h>
-#include <omp.h>
-
+#include "main.h"
+#include "Config.h"
+#include "Option.h"
+#include "Utils.h"
+#include "Hash_Engine.h"
+#include "Mangling.h"
+#include "log.h"
 #include "brute_force.h"
 #include "Dictionnary.h"
 #include "Shdow_io.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <getopt.h>
+#include <signal.h>
+#include <unistd.h>
+#include <crypt.h>
+#include <omp.h>
+
 #define RED(string) "\x1b[31m" string "\x1b[0m"
 
 NEMESIS_config_t NEMESIS_config = {0};
-//static struct NEMESIS_shadow_entry *NEMESIS_entry = NULL;
 struct NEMESIS_shadow_entry_list NEMESIS_shadow_entry_liste = {0};
 volatile sig_atomic_t interrupt_requested = 0;
 char SavePath[128] = {STR(DIR_OF_EXE)};
@@ -35,12 +32,20 @@ char SavePath[128] = {STR(DIR_OF_EXE)};
 
 static void run_attack(void);
 
+/**
+ * Libérer les ressources allouées par le programme
+ */
 static void global_cleanup(void) {
     NEMESIS_free_shadow_entry_list(&NEMESIS_shadow_entry_liste);
     close_log();
 }
 
 
+/**
+ * Gérer les signaux de crash du programme
+ * 
+ * @param sig Signal reçu
+ */
 void crash_handler(int sig) {
     write_log(LOG_ERROR, "Crash détecté, nettoyage...", "signal");
     global_cleanup();
@@ -48,23 +53,23 @@ void crash_handler(int sig) {
     _exit(128 + sig); // sortie immédiate et sûre
 }
 
+/**
+ * Gérer l'interruption utilisateur pour sauvegarder l'état
+ * 
+ * @param sig Signal reçu
+ */
 void save_handler(int sig) {
     interrupt_requested = 1;
     signal(SIGINT, SIG_DFL);
 }
 
-/*static void save_handler(int sig) {
-    printf("dans le handler\n");
-    atomic_store_explicit(&need_save,1, memory_order_relaxed);
-    atomic_store_explicit(&last_sig,sig, memory_order_relaxed);
-}*/
-
-/*static void combine_handler(int sig) {
-    save_handler(sig);
-    sleep(5);
-    crash_handler(sig);
-}*/
-
+/**
+ * Point d'entrée principal du programme
+ * 
+ * @param argc Nombre d'arguments
+ * @param argv Tableau des arguments
+ * @return 0 en cas de succès, code d'erreur sinon
+ */
 int main(int argc, char* argv[]){
 
     char errbuff[NEMESIS_ERRLEN];
@@ -109,14 +114,12 @@ int main(int argc, char* argv[]){
     return 0;
 }
 
+/**
+ * Exécuter l'attaque configurée sur les entrées shadow
+ * 
+ * @return void
+ */
 static void run_attack(void) {
-    // boucler sur le nombre de shadow entry.
-
-    // faire une fnct si brutforce et mangling alors lancer bruteforce mangling
-    // si dictionnaire et mangling
-    // si dictionnaire
-    // si brutforce.
-    // si mangling echec.
 
     if (NEMESIS_config.output.enable_logging) {if (init_log(NEMESIS_config.output.log_file,LOG_DEBUG) < 0) print_slow("erreur lors de l'initialisation des logs\n",SPEED_PRINT); else print_slow("Init log : Sucess\n",SPEED_PRINT);}
 
