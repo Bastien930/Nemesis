@@ -38,13 +38,14 @@ static inline int fast_eq_memcmp(const void *a, const void *b, size_t len) {
  * @return true si le mot de passe correspond, false sinon
  */
 bool NEMESIS_crypt(const char *password) {
-    struct crypt_data data;
-    data.initialized = 0;
+    static _Thread_local struct crypt_data data;
+    static _Thread_local int inited = 0;
+    if (!inited) { data.initialized = 0; inited = 1; }
+
     char *crypt_res = crypt_r(password, NEMESIS_salt,&data);
     if (!crypt_res) {char buffer[512];safe_concat(buffer,512,"Erreur lors de crypt pour le mot de passe : ",password);write_log(LOG_WARNING,buffer,"NEMESIS_crypt"); return false;}
     /* 2) extraire la partie hash encodée (dernier champ après $) */
     const char *enc_hash = extract_crypt_hash_part(crypt_res);
-
     if (strlen(enc_hash) != NEMESIS_hash_len) return false;
     return fast_eq_memcmp(enc_hash,NEMESIS_hash,NEMESIS_hash_len);
 }

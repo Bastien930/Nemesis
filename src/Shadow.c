@@ -56,7 +56,7 @@ struct NEMESIS_shadow_entry *NEMESIS_parse_shadow_line(const char *line) {
     if (!line) return NULL;
     char *line_copy = strdup_safe(line);
     if (!line_copy) return NULL;
-
+    line_copy[strcspn(line_copy, "\r\n")] = '\0';
     struct NEMESIS_shadow_entry *entry = malloc(sizeof(struct NEMESIS_shadow_entry));
     if (!entry) return fail_cleanup(NULL, line_copy);
 
@@ -97,6 +97,7 @@ struct NEMESIS_shadow_entry *NEMESIS_parse_shadow_line(const char *line) {
 
     entry->algo = algo;
     entry->hash = strdup_safe(hashval);
+
 
     free(hash_copy);
     free(line_copy);

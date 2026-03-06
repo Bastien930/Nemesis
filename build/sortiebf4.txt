@@ -1,0 +1,75 @@
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-23 14:46:22
+========================================
+
+Utilisateur: user4bf
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 9095250
+  Temps réel: 2161.90 secondes
+  Temps CPU: 32411.25 secondes
+  Débit: 4207.05 mots/seconde
+  Ratio CPU/Temps: 14.99x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-23 14:47:07
+========================================
+
+Utilisateur: user4bf
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 104541
+  Temps réel: 24.07 secondes
+  Temps CPU: 350.92 secondes
+  Débit: 4343.13 mots/seconde
+  Ratio CPU/Temps: 14.58x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-23 21:42:15
+========================================
+
+Utilisateur: user4bf
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 27007155
+  Temps réel: 6399.32 secondes
+  Temps CPU: 95958.49 secondes
+  Débit: 4220.32 mots/seconde
+  Ratio CPU/Temps: 15.00x
+
+========================================
+

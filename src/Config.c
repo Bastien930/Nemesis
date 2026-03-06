@@ -145,7 +145,7 @@ int NEMESIS_config_validate(const NEMESIS_config_t *cfg, char *errbuf, size_t er
     }
 
     /* threads checks */
-    if (cfg->system.threads == 0) {
+    if (cfg->system.threads <= 1) {
         if (errbuf && errlen) snprintf(errbuf, errlen, "threads must be >= 1");
         return -6;
     }
@@ -183,7 +183,6 @@ void NEMESIS_print_usage(const char *progname) {
 
     puts("Options (principales) :");
     puts("  -s, --shadow <file>        Fichier shadow (obligatoire).");
-    puts("                             Utilisez '-' pour lire depuis stdin.");
     puts("  -w, --wordlist <file>      Fichier wordlist (pour attaque par dictionnaire).");
     puts("      --resume               Active la reprise du programme a partir de la sauvegarde.");
     puts("  -m, --mangling <config>    Config vaut fast, balanced, agressive (défaut : fast).");
@@ -193,8 +192,8 @@ void NEMESIS_print_usage(const char *progname) {
     puts("                             presets: default, alphanum, numeric, <custom>");
     puts("      --min <n>              Longueur minimale pour génération brutforce (défaut : " STR(NEMESIS_MIN_LEN) ").");
     puts("      --max <n>              Longueur maximale pour génération brutforce (défaut : " STR(NEMESIS_MAX_LEN) ").");
-    puts("  -t, --threads <n>          Nombre de threads (défaut : 1).");
-    puts("  -o, --output <file>        Fichier de sortie (JSON/CSV/TXT selon extension).");
+    puts("  -t, --threads <n>          Nombre de threads (défaut : 2).");
+    puts("  -o, --output <file>        Fichier de sortie (JSON/CSV/TXT/XML selon extension).");
     puts("      --format <json|csv|txt|xml> Forcer le format de sortie (TXT si omis).");
     puts("  --log <file>               Activer logging vers fichier (doit être écrit).");
     puts("  -h, --help                 Afficher cette aide et quitter.");

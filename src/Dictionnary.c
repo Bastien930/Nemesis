@@ -48,41 +48,79 @@ typedef struct {
  *
  * @param total Nombre total de lignes à traiter
  */
-static void print_dict_progress(uint_fast64_t total) {
-    printf("\033[%dA", num_display_threads);
+static void print_dict_progress(uint_fast64_t total_keyspace, uint_fast64_t quota_per_worker) {
+    const int workers = num_display_threads - 1;
+    const int lines_to_redraw = workers + 1; // workers + ligne GLOBAL
 
-    for (int i = 1; i < num_display_threads; i++) {
-        printf("\033[K");
+    // Remonter de N lignes
+    printf("\033[%dA", lines_to_redraw);
 
-        if (thread_progress[i].active) {
-            double percent = ((double)thread_progress[i].count * 100.0) / (double)total;
-            int bar_width = 80;
-            int filled = (int)(percent * bar_width / 100.0);
+    // Barres par thread (workers uniquement)
+    for (int tid = 1; tid <= workers; tid++) {
+        uint_fast64_t c = 0;
+        int active = 0;
+        char last[512]; // fallback local (si last_save_word plus grand, adapte)
+        last[0] = '\0';
 
-            printf("T%02d [", i);
-            for (int j = 0; j < bar_width; j++) {
-                printf("%s", j < filled ? "#" : "-");
+        #pragma omp atomic read
+        c = thread_progress[tid].count;
+
+        #pragma omp atomic read
+        active = thread_progress[tid].active;
+
+        #pragma omp critical(progress_string)
+        {
+            // copie défensive
+            strncpy(last, thread_progress[tid].last_save_word, sizeof(last) - 1);
+            last[sizeof(last) - 1] = '\0';
+        }
+
+        printf("\033[K"); // clear line
+
+        if (active) {
+            double percent = 0.0;
+            if (quota_per_worker > 0) {
+                percent = ((double)c * 100.0) / (double)quota_per_worker;
             }
-            printf("] %5.1f%% | %s\n", percent, thread_progress[i].last_save_word);
+
+            int bar_width = 80;
+            int filled = (int)(percent * (double)bar_width / 100.0);
+            if (filled < 0) filled = 0;
+            if (filled > bar_width) filled = bar_width;
+
+            printf("T%02d [", tid);
+            for (int j = 0; j < bar_width; j++) {
+                putchar(j < filled ? '#' : '-');
+            }
+            printf("] %5.1f%% | %s\n", percent, last);
         } else {
-            printf("T%02d [IDLE]\n", i);
+            printf("T%02d [IDLE]\n", tid);
         }
     }
 
     // Barre globale
     uint_fast64_t sum_current = 0;
-    for (int i = 1; i < num_display_threads; i++) {
-        sum_current += thread_progress[i].count;
+    for (int tid = 1; tid <= workers; tid++) {
+        uint_fast64_t c = 0;
+        #pragma omp atomic read
+        c = thread_progress[tid].count;
+        sum_current += c;
     }
 
-    double global_percent = ((double)sum_current * 100.0) / (total * (num_display_threads - 1));
+    double global_percent = 0.0;
+    if (total_keyspace > 0) {
+        global_percent = ((double)sum_current * 100.0) / (double)total_keyspace;
+    }
+
     int bar_width = 100;
-    int filled = (int)(global_percent * bar_width / 100.0);
+    int filled = (int)(global_percent * (double)bar_width / 100.0);
+    if (filled < 0) filled = 0;
+    if (filled > bar_width) filled = bar_width;
 
     printf("\033[K");
     printf("GLOBAL [");
     for (int j = 0; j < bar_width; j++) {
-        printf("%s", j < filled ? "#" : "-");
+        putchar(j < filled ? '#' : '-');
     }
     printf("] %5.1f%%\n", global_percent);
 
@@ -248,7 +286,7 @@ int load_dict_state(int tid, dict_resume_t *state) {
  * @return Status de l'attaque
  */
 NEMESIS_brute_status_t NEMESIS_dictionary_attack(const char *dict_filename) {
-    print_slow("Dictionary attack starting...\n",SPEED_PRINT);
+    print_slow("Dictionary attack starting...\n", SPEED_PRINT);
 
     dict_mmap_t dict = {0};
 
@@ -258,125 +296,159 @@ NEMESIS_brute_status_t NEMESIS_dictionary_attack(const char *dict_filename) {
     }
 
     total_lines = dict.num_lines;
-    PRINT_SLOW_MACRO(SPEED_PRINT,"Dictionnaire chargé : %llu lignes\n\n", (unsigned long long)total_lines);
+    PRINT_SLOW_MACRO(SPEED_PRINT, "Dictionnaire chargé : %llu lignes\n\n", (unsigned long long)total_lines);
 
     num_display_threads = NEMESIS_config.system.threads;
+    if (num_display_threads < 2) {
+        write_log(LOG_ERROR, "threads doit etre >= 2 (1 UI + 1 worker)", "dict_attack");
+        return NEMESIS_BRUTE_ERROR;
+    }
 
-    // Initialisation de l'affichage
-    for (int i = 1; i < num_display_threads; i++) {
+    const int workers = num_display_threads - 1;
+    const uint_fast64_t quota_per_worker = (total_lines + (uint_fast64_t)workers - 1u) / (uint_fast64_t)workers;
+
+    // Initialisation affichage
+    for (int i = 1; i <= workers; i++) {
+        #pragma omp atomic write
         thread_progress[i].count = 0;
+
+        #pragma omp atomic write
         thread_progress[i].active = 0;
-        strcpy(thread_progress[i].last_save_word, "");
+
+        #pragma omp critical(progress_string)
+        {
+            thread_progress[i].last_save_word[0] = '\0';
+        }
+
         thread_state[i].line_number = 0;
         thread_state[i].count = 0;
         printf("T%02d [Initialisation...]\n", i);
     }
+    printf("GLOBAL [Initialisation...]\n");
 
-    volatile int stop_ui = 0;
+    int stop_ui = 0;
 
     #pragma omp parallel num_threads(num_display_threads)
     {
         int tid = omp_get_thread_num();
 
         if (tid == 0) {
-            // Thread d'affichage
+            // Thread UI
             sleep(1);
-            while (!stop_ui && !interrupt_requested) {
-                print_dict_progress(total_lines);
 
-                struct timespec ts = {0, 500 * 1000000};
+            while (1) {
+                int s = 0;
+                #pragma omp atomic read
+                s = stop_ui;
+
+                if (s || interrupt_requested) break;
+
+                print_dict_progress(total_lines, quota_per_worker);
+
+                struct timespec ts = {0, 250 * 1000000};
                 while (nanosleep(&ts, &ts) == -1) {
                     if (interrupt_requested) break;
                 }
             }
         } else {
-            char word[NEMESIS_MAX_LEN + 1];
-            uint_fast64_t start_line = 0;
-            uint_fast64_t local_count = 0;
+            // Worker
+            char word[256 + 1];
 
-            // Reprise si sauvegarde existe
+            // Calcul plage de base
+            uint_fast64_t my_start = (uint_fast64_t)(tid - 1) * quota_per_worker;
+            uint_fast64_t my_end = my_start + quota_per_worker;
+            if (my_end > total_lines) my_end = total_lines;
+
+            // Reprise si sauvegarde
             dict_resume_t state;
             if (NEMESIS_config.input.save && load_dict_state(tid, &state)) {
-                start_line = state.line_number;
-                local_count = state.count;
-                thread_progress[tid].count = local_count;
+                if (state.line_number > my_start)
+                    my_start = state.line_number;
+
+                #pragma omp atomic write
+                thread_progress[tid].count = state.count;
+                thread_state[tid].count = state.count;
             }
 
-            // Calcul de la plage de travail pour ce thread
-            uint_fast64_t lines_per_thread = total_lines / (num_display_threads - 1);
-            uint_fast64_t my_start;
-            if (NEMESIS_config.input.save && start_line > 0) {
-                my_start = start_line;
-            } else {
-                // Exécution normale
-                my_start = (tid - 1) * lines_per_thread;
-            }
-            uint_fast64_t my_end = (tid == num_display_threads - 1)
-                                   ? total_lines
-                                   : my_start + lines_per_thread;
-
+            #pragma omp atomic write
             thread_progress[tid].active = 1;
-            #pragma omp flush(thread_progress)
 
-            // Traitement des lignes
-            uint_fast64_t next_update = CHUNK_SIZE;
+            long long local_counter = 0;
+            const long long UPDATE_INTERVAL = (long long)CHUNK_SIZE;
 
             for (uint_fast64_t line = my_start; line < my_end && !interrupt_requested; line++) {
                 if (is_password_found()) break;
 
                 get_line_from_mmap(&dict, line, word, sizeof(word));
-
-                // Ignorer les lignes vides ou trop longues
                 if (word[0] == '\0') continue;
 
                 NEMESIS_hash_compare(word, NULL);
 
-                local_count++;
+                // Update atomique du count à chaque ligne
+                #pragma omp atomic update
+                thread_progress[tid].count += 1;
 
-                // Mise à jour périodique par seuil
-                if (local_count >= next_update) {
-                    thread_progress[tid].count = local_count;
-                    strncpy(thread_progress[tid].last_save_word, word, NEMESIS_MAX_LEN);
-                    thread_progress[tid].last_save_word[NEMESIS_MAX_LEN] = '\0';
+                local_counter++;
+
+                // Update string + state au seuil seulement
+                if (local_counter >= UPDATE_INTERVAL) {
+                    #pragma omp critical(progress_string)
+                    {
+                        strncpy(thread_progress[tid].last_save_word, word, 255);
+                        thread_progress[tid].last_save_word[256] = '\0';
+                    }
 
                     thread_state[tid].line_number = line;
-                    thread_state[tid].count = local_count;
+                    uint_fast64_t c = 0;
+                    #pragma omp atomic read
+                    c = thread_progress[tid].count;
+                    thread_state[tid].count = c;
 
-                    next_update += CHUNK_SIZE;
+                    local_counter = 0;
                 }
             }
 
-            #pragma omp critical
-            {
-                stop_ui = 1;
+            // Flush final
+            if (local_counter > 0) {
+                #pragma omp critical(progress_string)
+                {
+                    strncpy(thread_progress[tid].last_save_word, word, 255);
+                    thread_progress[tid].last_save_word[256] = '\0';
+                }
+
+                thread_state[tid].line_number = my_end - 1;
+                uint_fast64_t c = 0;
+                #pragma omp atomic read
+                c = thread_progress[tid].count;
+                thread_state[tid].count = c;
             }
 
+            #pragma omp atomic write
             thread_progress[tid].active = 0;
+
+            #pragma omp atomic write
+            stop_ui = 1;
         }
     }
 
-    // Nettoyage
     munmap(dict.data, dict.size);
     free(dict.line_offsets);
-
     end_time();
 
     if (interrupt_requested) {
         char res[64];
-        print_slow("Voulez vous sauvegarder l'etat de l'application ? (Y/N) : ",SPEED_PRINT);
+        print_slow("Voulez vous sauvegarder l'etat de l'application ? (Y/N) : ", SPEED_PRINT);
         fflush(stdout);
-
         if (fgets(res, sizeof(res), stdin) == NULL) return NEMESIS_BRUTE_ERROR;
-
         if (res[0] != 'Y' && res[0] != 'y') {
-            print_slow("Sauvegarde annulée.\n",SPEED_PRINT);
-
+            print_slow("Sauvegarde annulée.\n", SPEED_PRINT);
             return NEMESIS_BRUTE_DONE;
         }
         return NEMESIS_BRUTE_INTERRUPTED;
     }
 
     printf("\n");
+    fflush(stdout);
     return NEMESIS_BRUTE_DONE;
 }
 
@@ -387,8 +459,8 @@ NEMESIS_brute_status_t NEMESIS_dictionary_attack(const char *dict_filename) {
  * @param config Configuration des règles de mutation
  * @return Status de l'attaque
  */
-NEMESIS_brute_status_t NEMESIS_dictionary_attack_mangling(const char *dict_filename,ManglingConfig config) {
-    print_slow("Debut de l'attaque par dictionnaire...\n",SPEED_PRINT);
+NEMESIS_brute_status_t NEMESIS_dictionary_attack_mangling(const char *dict_filename, ManglingConfig config) {
+    print_slow("Debut de l'attaque par dictionnaire...\n", SPEED_PRINT);
 
     dict_mmap_t dict = {0};
 
@@ -399,121 +471,172 @@ NEMESIS_brute_status_t NEMESIS_dictionary_attack_mangling(const char *dict_filen
 
     total_lines = dict.num_lines;
     int mangling_count = NEMESIS_GET_ITERATION_OF_MANGLING(NEMESIS_config.attack.mangling_config);
-    PRINT_SLOW_MACRO(SPEED_PRINT,"Dictionnaire chargé: %llu lignes\n\n", (unsigned long long)total_lines);
+    PRINT_SLOW_MACRO(SPEED_PRINT, "Dictionnaire chargé: %llu lignes\n\n", (unsigned long long)total_lines);
     total_lines *= mangling_count;
 
     num_display_threads = NEMESIS_config.system.threads;
+    if (num_display_threads < 2) {
+        write_log(LOG_ERROR, "threads doit etre >= 2 (1 UI + 1 worker)", "NEMESIS_dictionary_attack_mangling");
+        return NEMESIS_BRUTE_ERROR;
+    }
 
-    // Initialisation de l'affichage
-    for (int i = 1; i < num_display_threads; i++) {
+    const int workers = num_display_threads - 1;
+    const uint_fast64_t display_total = total_lines; // déjà multiplié
+    const uint_fast64_t real_lines = dict.num_lines;  // lignes réelles du dico
+    const uint_fast64_t quota_per_worker = (real_lines + (uint_fast64_t)workers - 1u) / (uint_fast64_t)workers;
+
+    // Pour l'affichage, quota en termes de mots manglés
+    const uint_fast64_t display_quota = quota_per_worker * (uint_fast64_t)mangling_count;
+
+    // Initialisation affichage
+    for (int i = 1; i <= workers; i++) {
+        #pragma omp atomic write
         thread_progress[i].count = 0;
+
+        #pragma omp atomic write
         thread_progress[i].active = 0;
-        strcpy(thread_progress[i].last_save_word, "");
+
+        #pragma omp critical(progress_string)
+        {
+            thread_progress[i].last_save_word[0] = '\0';
+        }
+
         thread_state[i].line_number = 0;
         thread_state[i].count = 0;
         printf("T%02d [Initialisation...]\n", i);
     }
+    printf("GLOBAL [Initialisation...]\n");
 
-    volatile int stop_ui = 0;
+    int stop_ui = 0;
 
     #pragma omp parallel num_threads(num_display_threads)
     {
         int tid = omp_get_thread_num();
 
         if (tid == 0) {
-            // Thread d'affichage
+            // Thread UI
             sleep(1);
-            while (!stop_ui && !interrupt_requested) {
-                print_dict_progress(total_lines);
 
-                struct timespec ts = {0, 500 * 1000000};
+            while (1) {
+                int s = 0;
+                #pragma omp atomic read
+                s = stop_ui;
+
+                if (s || interrupt_requested) break;
+
+                print_dict_progress(display_total, display_quota);
+
+                struct timespec ts = {0, 250 * 1000000};
                 while (nanosleep(&ts, &ts) == -1) {
                     if (interrupt_requested) break;
                 }
             }
         } else {
-            // Threads de travail
-            char word[NEMESIS_MAX_LEN + 1];
-            uint_fast64_t start_line = 0;
+            // Worker
+            char word[256 + 1];
             uint_fast64_t local_count = 0;
 
-            // Reprise si sauvegarde existe
+            // Calcul plage de base
+            uint_fast64_t my_start = (uint_fast64_t)(tid - 1) * quota_per_worker;
+            uint_fast64_t my_end = my_start + quota_per_worker;
+            if (my_end > real_lines) my_end = real_lines;  // ← real_lines pas total_lines
+
+            // Reprise si sauvegarde
             dict_resume_t state;
             if (NEMESIS_config.input.save && load_dict_state(tid, &state)) {
-                start_line = state.line_number;
+                if (state.line_number > my_start)
+                    my_start = state.line_number;
                 local_count = state.count;
+
+                #pragma omp atomic write
                 thread_progress[tid].count = local_count;
+                thread_state[tid].count = local_count;
             }
 
-            // Calcul de la plage de travail pour ce thread
-            uint_fast64_t lines_per_thread = total_lines / (num_display_threads - 1);
-            uint_fast64_t my_start = start_line + (tid - 1) * lines_per_thread;
-            uint_fast64_t my_end = (tid == num_display_threads - 1)
-                                   ? total_lines
-                                   : my_start + lines_per_thread;
-
+            #pragma omp atomic write
             thread_progress[tid].active = 1;
-            #pragma omp flush(thread_progress)
 
-            // Traitement des lignes
-            uint_fast64_t next_update = CHUNK_SIZE_MANGLING;
-
+            long long local_counter = 0;
+            const long long UPDATE_INTERVAL = (long long)CHUNK_SIZE_MANGLING;
+            HashSet *hs = malloc(sizeof(HashSet));
+            hashset_init(hs);
             for (uint_fast64_t line = my_start; line < my_end && !interrupt_requested; line++) {
                 if (is_password_found()) break;
 
                 get_line_from_mmap(&dict, line, word, sizeof(word));
+                if (word[0] == '\0') continue;
 
-                // Ignorer les lignes vides ou trop longues
-                if (word[0] == '\0' ) continue;
+                generate_mangled_words(word, &config,hs);
 
-                generate_mangled_words(word,&config);
+                local_count += mangling_count;
+                local_counter += mangling_count;
 
-                local_count+=mangling_count;
+                thread_progress[tid].count += (uint_fast64_t)mangling_count;
 
-                // Mise à jour périodique par seuil
-                if (local_count >= next_update) {
-                    thread_progress[tid].count = local_count;
-                    strncpy(thread_progress[tid].last_save_word, word, NEMESIS_MAX_LEN);
-                    thread_progress[tid].last_save_word[NEMESIS_MAX_LEN] = '\0';
+                if (local_counter >= UPDATE_INTERVAL) {
+#pragma omp critical(progress_string)
+                    {
+                        strncpy(thread_progress[tid].last_save_word, word, 255);
+                        thread_progress[tid].last_save_word[256] = '\0';
+                    }
 
                     thread_state[tid].line_number = line;
-                    thread_state[tid].count = local_count;
+                    uint_fast64_t c = 0;
+#pragma omp atomic read
+                    c = thread_progress[tid].count;
+                    thread_state[tid].count = c;
 
-                    next_update += CHUNK_SIZE_MANGLING;
+                    local_counter = 0;
                 }
             }
+            hashset_free(hs);
+            free(hs);
+            // Flush final
+            if (local_counter > 0) {
+                #pragma omp atomic update
+                thread_progress[tid].count += (uint_fast64_t)local_counter;
 
-            #pragma omp critical
-            {
-                stop_ui = 1;
+                #pragma omp critical(progress_string)
+                {
+                    strncpy(thread_progress[tid].last_save_word, word, 255);
+                    thread_progress[tid].last_save_word[256] = '\0';
+                }
+
+                thread_state[tid].line_number = my_end - 1;
+                uint_fast64_t c = 0;
+                #pragma omp atomic read
+                c = thread_progress[tid].count;
+                thread_state[tid].count = c;
             }
 
+
+            #pragma omp atomic write
             thread_progress[tid].active = 0;
+
+            // Signaler à l'UI
+            #pragma omp atomic write
+            stop_ui = 1;
         }
     }
 
-    // Nettoyage
     munmap(dict.data, dict.size);
     free(dict.line_offsets);
-
     end_time();
 
     if (interrupt_requested) {
         char res[64];
-        print_slow("Voulez vous sauvegarder l'etat de l'application ? (Y/N) : ",SPEED_PRINT);
+        print_slow("Voulez vous sauvegarder l'etat de l'application ? (Y/N) : ", SPEED_PRINT);
         fflush(stdout);
-
         if (fgets(res, sizeof(res), stdin) == NULL) return NEMESIS_BRUTE_ERROR;
-
         if (res[0] != 'Y' && res[0] != 'y') {
-            print_slow("Sauvegarde annulée.\n",SPEED_PRINT);
-
+            print_slow("Sauvegarde annulée.\n", SPEED_PRINT);
             return NEMESIS_BRUTE_DONE;
         }
         return NEMESIS_BRUTE_INTERRUPTED;
     }
 
     printf("\n");
+    fflush(stdout);
     return NEMESIS_BRUTE_DONE;
 }
 

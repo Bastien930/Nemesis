@@ -43,8 +43,7 @@ int init_log(const char *filename, int level) { // le level correspond au level 
  */
 void write_log(LogLevel level, const char *message, const char *location) {
     if (!log_config || !log_config->file) return;
-
-    if (level > LOG_ERROR || level < LOG_DEBUG) level = log_config->log_level;
+    if (level < LOG_ERROR || level > LOG_DEBUG) level = log_config->log_level;
 
     const char *level_str[] = {"ERROR", "WARNING", "INFO", "DEBUG"};
     time_t now = time(NULL);

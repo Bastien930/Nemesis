@@ -35,7 +35,7 @@ snprintf((out), (out_size), "%s/%s", (dir), (file))
 
 typedef struct {
     uint_fast64_t count;
-    char last_save_word[NEMESIS_MAX_LEN + 1];
+    char last_save_word[256 + 1];
     int active;
 } thread_progress_t ;
 

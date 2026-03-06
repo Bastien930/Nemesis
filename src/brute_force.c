@@ -36,86 +36,123 @@ static thread_progress_t thread_progress[NEMESIS_MAX_THREADS] = {0};
 static int num_display_threads = 0;
 brute_resume_t thread_state[NEMESIS_MAX_THREADS];
 
-// Fonction pour afficher toutes les barres, plus une barre globale
-static void print_multi_progress(uint_fast64_t total) {
-    // Remonter de N lignes (où N = nombre de threads)
-    printf("\033[%dA", num_display_threads);
 
-    // Barres par thread
-    for (int i = 1; i < num_display_threads; i++) {
-        printf("\033[K");  // Effacer la ligne
+static void print_multi_progress(uint_fast64_t total_keyspace, uint_fast64_t quota_per_worker) {
+    const int workers = num_display_threads - 1;
+    const int lines_to_redraw = workers + 1; // workers + ligne GLOBAL
 
-        if (thread_progress[i].active) {
-            double percent = ((double)thread_progress[i].count * 100.0) / (double)total;
-            int bar_width = 80;
-            int filled = (int)(percent * bar_width / 100.0);
+    // Remonter de N lignes
+    printf("\033[%dA", lines_to_redraw);
 
-            printf("T%02d [", i);
-            for (int j = 0; j < bar_width; j++) {
-                printf("%s", j < filled ? "#" : "-");
+    // Barres par thread (workers uniquement)
+    for (int tid = 1; tid <= workers; tid++) {
+        uint_fast64_t c = 0;
+        int active = 0;
+        char last[512]; // fallback local (si last_save_word plus grand, adapte)
+        last[0] = '\0';
+
+        #pragma omp atomic read
+        c = thread_progress[tid].count;
+
+        #pragma omp atomic read
+        active = thread_progress[tid].active;
+
+        #pragma omp critical(progress_string)
+        {
+            // copie défensive
+            strncpy(last, thread_progress[tid].last_save_word, sizeof(last) - 1);
+            last[sizeof(last) - 1] = '\0';
+        }
+
+        printf("\033[K"); // clear line
+
+        if (active) {
+            double percent = 0.0;
+            if (quota_per_worker > 0) {
+                percent = ((double)c * 100.0) / (double)quota_per_worker;
             }
-            printf("] %5.1f%% | %s\n", percent, thread_progress[i].last_save_word);
+
+            int bar_width = 80;
+            int filled = (int)(percent * (double)bar_width / 100.0);
+            if (filled < 0) filled = 0;
+            if (filled > bar_width) filled = bar_width;
+
+            printf("T%02d [", tid);
+            for (int j = 0; j < bar_width; j++) {
+                putchar(j < filled ? '#' : '-');
+            }
+            printf("] %5.1f%% | %s\n", percent, last);
         } else {
-            printf("T%02d [IDLE]\n", i);
+            printf("T%02d [IDLE]\n", tid);
         }
     }
 
     // Barre globale
     uint_fast64_t sum_current = 0;
-    for (int i = 1; i < num_display_threads; i++) {
-        sum_current += thread_progress[i].count;
+    for (int tid = 1; tid <= workers; tid++) {
+        uint_fast64_t c = 0;
+        #pragma omp atomic read
+        c = thread_progress[tid].count;
+        sum_current += c;
     }
 
-    double global_percent = ((double)sum_current * 100.0) / (total * (num_display_threads-1));
-    int bar_width = 100;  // largeur différente pour la barre globale
-    int filled = (int)(global_percent * bar_width / 100.0);
+    double global_percent = 0.0;
+    if (total_keyspace > 0) {
+        global_percent = ((double)sum_current * 100.0) / (double)total_keyspace;
+    }
 
-    printf("\033[K");  // Effacer la ligne
+    int bar_width = 100;
+    int filled = (int)(global_percent * (double)bar_width / 100.0);
+    if (filled < 0) filled = 0;
+    if (filled > bar_width) filled = bar_width;
+
+    printf("\033[K");
     printf("GLOBAL [");
     for (int j = 0; j < bar_width; j++) {
-        printf("%s", j < filled ? "#" : "-");
+        putchar(j < filled ? '#' : '-');
     }
     printf("] %5.1f%%\n", global_percent);
 
     fflush(stdout);
 }
 
-
-
-
 /**
  * Charger l'état sauvegardé d'un thread
- *
- * @param tid Identifiant du thread
- * @param state Structure de données pour stocker l'état chargé
- * @return 1 si chargement réussi, 0 sinon
+ * @return 1 si OK, 0 sinon
  */
 int load_state_from_file(int tid, brute_resume_t *state)
 {
     char filename[NEMESIS_MAX_PATH];
     char fullPath[NEMESIS_MAX_PATH];
-    snprintf(filename, sizeof(filename), "resume_thread_%d.bin", tid);
-    PATH_JOIN(fullPath,NEMESIS_MAX_PATH,NEMESIS_config.output.save_dir,filename);
-    FILE *f = fopen(fullPath, "rb");
-    if (!f){return 0;}
 
-    int r = fread(state, sizeof(brute_resume_t), 1, f);
+    snprintf(filename, sizeof(filename), "resume_thread_%d.bin", tid);
+    PATH_JOIN(fullPath, NEMESIS_MAX_PATH, NEMESIS_config.output.save_dir, filename);
+
+    FILE *f = fopen(fullPath, "rb");
+    if (!f) return 0;
+
+    size_t r = fread(state, sizeof(brute_resume_t), 1, f);
     fclose(f);
-    return 1;
+
+    return (r == 1) ? 1 : 0;
 }
 
+static inline uint_fast64_t keyspace_total(int charset_len, int min_len, int max_len) {
+    uint_fast64_t tot = 0;
+    for (int L = min_len; L <= max_len; L++) {
+        tot += puissance((uint_fast64_t)charset_len, L);
+    }
+    return tot;
+}
 
 /**
  * Exécuter une attaque par force brute
- *
- * @return Status de l'attaque (DONE, ERROR, INTERRUPTED)
  */
 NEMESIS_brute_status_t NEMESIS_bruteforce(void) {
 
-    print_slow("Debut de l'attaque Bruteforce...\n",SPEED_PRINT);
+    print_slow("Debut de l'attaque Bruteforce...\n", SPEED_PRINT);
 
     char caracteres[256];
-
 
     int len = build_charset(
         caracteres,
@@ -124,6 +161,9 @@ NEMESIS_brute_status_t NEMESIS_bruteforce(void) {
         NEMESIS_config.attack.charset_custom
     );
 
+    const int min_len = NEMESIS_config.attack.min_len;
+    const int max_len = NEMESIS_config.attack.max_len;
+
     if (len < 0) {
         write_log(LOG_ERROR, "Erreur charset", "bruteforce");
         return NEMESIS_BRUTE_ERROR;
@@ -131,125 +171,185 @@ NEMESIS_brute_status_t NEMESIS_bruteforce(void) {
 
     const int b = len;
 
-
     num_display_threads = NEMESIS_config.system.threads;
-    total = puissance(len, NEMESIS_MAX_LEN)/num_display_threads;
-
-
-
-    for (int i = 1; i < num_display_threads; i++) {
-        thread_progress[i].count = 0;
-        thread_progress[i].active = 0;
-        strcpy(thread_progress[i].last_save_word, "");
-        thread_state[i].length = 0;
-        memset(thread_state[i].indexes, 0, sizeof(int) * NEMESIS_MAX_LEN);
-        printf("T%02d [Initialisation...]\n", i);
+    if (num_display_threads < 2) {
+        write_log(LOG_ERROR, "threads doit etre >= 2 (1 UI + 1 worker)", "bruteforce");
+        return NEMESIS_BRUTE_ERROR;
     }
-    volatile int stop_ui = 0;
+
+    const int workers = num_display_threads - 1;
+
+    const uint_fast64_t total_keyspace = keyspace_total(len, min_len, max_len);
+    const uint_fast64_t quota_per_worker = (total_keyspace + (uint_fast64_t)workers - 1u) / (uint_fast64_t)workers; // division plafond
+
+
+    // Préparer l'affichage (workers + GLOBAL)
+    for (int tid = 1; tid <= workers; tid++) {
+        #pragma omp atomic write
+        thread_progress[tid].count = 0;
+
+        #pragma omp atomic write
+        thread_progress[tid].active = 0;
+
+        #pragma omp critical(progress_string)
+        {
+            thread_progress[tid].last_save_word[0] = '\0';
+        }
+
+        thread_state[tid].length = 0;
+        memset(thread_state[tid].indexes, 0, sizeof(int) * max_len);
+        printf("T%02d [Initialisation...]\n", tid);
+    }
+    printf("GLOBAL [Initialisation...]\n");
+
+    int stop_ui = 0;
 
     #pragma omp parallel num_threads(num_display_threads)
     {
         int tid = omp_get_thread_num();
 
+        if (tid == 0) {
+            // UI thread
+            sleep(1);
 
+            while (1) {
+                int s = 0;
+                #pragma omp atomic read
+                s = stop_ui;
 
-        if (tid==0) {
-            sleep(3);
-            while (!stop_ui && !interrupt_requested) {
+                if (s || interrupt_requested) break;
 
-                print_multi_progress(LL(total));
+                print_multi_progress(total_keyspace, quota_per_worker);
 
-                struct timespec ts = {0, 500 * 1000000};
+                struct timespec ts = {0, 250 * 1000000}; // 250ms
                 while (nanosleep(&ts, &ts) == -1) {
-                    if (interrupt_requested)
-                        break;
+                    if (interrupt_requested) break;
                 }
             }
         } else {
-            int flag = 0;
-            char word[NEMESIS_MAX_LEN + 1];
-            int indexes[NEMESIS_MAX_LEN];
-            int length = NEMESIS_config.attack.min_len;
+            // Worker
+            const int worker_index = tid - 1; // 0..workers-1
 
+            char word[max_len + 1];
+            int indexes[max_len];
+            int length = min_len;
+
+            // Init indexes/word
+            memset(indexes, 0, sizeof(indexes));
+            for (int i = 0; i < min_len; i++) word[i] = caracteres[0];
+            word[min_len] = '\0';
+
+            // Resume si dispo
             brute_resume_t state;
+            int resumed = 0;
             if (NEMESIS_config.input.save && load_state_from_file(tid, &state)) {
                 length = state.length;
-                memcpy(indexes, state.indexes, sizeof(int) * NEMESIS_MAX_LEN);
-                for (int i = 0; i < length; i++)
-                    word[i] = caracteres[indexes[i]];
+                memcpy(indexes, state.indexes, sizeof(int) * max_len);
+
+                for (int i = 0; i < length; i++) word[i] = caracteres[indexes[i]];
                 word[length] = '\0';
-                strcpy(thread_progress[tid].last_save_word,word);
-                thread_state[tid].count = state.count;
+
+                #pragma omp atomic write
                 thread_progress[tid].count = state.count;
-            } else {
 
+                thread_state[tid].count = state.count;
+                thread_state[tid].length = length;
+                memcpy(thread_state[tid].indexes, indexes, sizeof(int) * max_len);
 
-                // mot initial : "a"
-                for (int i = 0; i < NEMESIS_config.attack.min_len; i++) {
-                    indexes[i] = 0;
-                    word[i] = caracteres[0];
+                #pragma omp critical(progress_string)
+                {
+                    strncpy(thread_progress[tid].last_save_word, word, max_len);
+                    thread_progress[tid].last_save_word[max_len] = '\0';
                 }
-                word[NEMESIS_config.attack.min_len] = '\0';
-                length = NEMESIS_config.attack.min_len;
-                printf("word : %s\n",word);
-                // DÉCALAGE INITIAL
-                for (int i = 1; i < tid; i++) {
-                    increment_word(word, indexes, caracteres, b, &length, NEMESIS_MAX_LEN);
+
+                resumed = 1;
+            }
+
+            if (!resumed) {
+                // Offset initial : worker_index pas
+                for (int k = 0; k < worker_index; k++) {
+                    increment_word(word, indexes, caracteres, b, &length, max_len);
+                    if (length > max_len) break;
                 }
             }
 
+            #pragma omp atomic write
             thread_progress[tid].active = 1;
-#pragma omp flush(thread_progress)
 
-            const long long UPDATE_INTERVAL = CHUNK_SIZE;
+            const long long UPDATE_INTERVAL = (long long)CHUNK_SIZE;
             long long local_counter = 0;
+            uint_fast64_t done = 0;
 
-            while (!interrupt_requested && !is_password_found()) {
+            while (!interrupt_requested && !is_password_found() && done < quota_per_worker) {
 
-
+                // Tester
                 NEMESIS_hash_compare(word, NULL);
 
-                // saut de num_threads mots
-                for (int i = 1; i < num_display_threads; i++) {
-                    increment_word(word, indexes, caracteres, b, &length, NEMESIS_MAX_LEN);
+                // Avancer de "workers" pas (partition stable)
+                for (int k = 0; k < workers; k++) {
+                    increment_word(word, indexes, caracteres, b, &length, max_len);
+                    if (length > max_len) break;
                 }
+                if (length > max_len) break;
 
-                if (length > NEMESIS_MAX_LEN)
-                    break;
+                done++;
+                #pragma omp atomic update
+                thread_progress[tid].count += 1;
 
                 local_counter++;
 
                 if (local_counter >= UPDATE_INTERVAL) {
-                    thread_progress[tid].count += local_counter;
-                    strncpy(thread_progress[tid].last_save_word,word,NEMESIS_MAX_LEN);
-                    thread_progress[tid].last_save_word[NEMESIS_MAX_LEN] = '\0';
+                #pragma omp critical(progress_string)
+                    {
+                        strncpy(thread_progress[tid].last_save_word, word, max_len);
+                        thread_progress[tid].last_save_word[max_len] = '\0';
+                    }
 
                     thread_state[tid].length = length;
-                    thread_state[tid].count = thread_progress[tid].count;
-                    memcpy(thread_state[tid].indexes, indexes, sizeof(int) * NEMESIS_MAX_LEN);
+                    uint_fast64_t c = 0;
+                    #pragma omp atomic read
+                    c = thread_progress[tid].count;
+                    thread_state[tid].count = c;
+                    memcpy(thread_state[tid].indexes, indexes, sizeof(int) * max_len);
 
                     local_counter = 0;
                 }
             }
-            #pragma omp critical
-            {
-                stop_ui = 1;
+
+            if (local_counter > 0) {
+#pragma omp critical(progress_string)
+                {
+                    strncpy(thread_progress[tid].last_save_word, word, max_len);
+                    thread_progress[tid].last_save_word[max_len] = '\0';
+                }
+                thread_state[tid].length = length;
+
+                // ← manque ça :
+                uint_fast64_t c = 0;
+#pragma omp atomic read
+                c = thread_progress[tid].count;
+                thread_state[tid].count = c;
+
+                memcpy(thread_state[tid].indexes, indexes, sizeof(int) * max_len);
             }
+
+            // Signaler à l'UI d'arrêter (un seul worker suffit)
+            #pragma omp atomic write
+            stop_ui = 1;
         }
     }
 
-    //Sauvegarde
     end_time();
+
     if (interrupt_requested) {
         char res[64];
-        print_slow("Voulez vous sauvegarder l'etat de l'application ? (Y/N) : ",SPEED_PRINT);
+        print_slow("Voulez vous sauvegarder l'etat de l'application ? (Y/N) : ", SPEED_PRINT);
         fflush(stdout);
 
         if (fgets(res, sizeof(res), stdin) == NULL) return NEMESIS_BRUTE_ERROR;
 
         if (res[0] != 'Y' && res[0] != 'y') {
-            print_slow("Sauvegarde annulée.\n",SPEED_PRINT);
-
+            print_slow("Sauvegarde annulée.\n", SPEED_PRINT);
             return NEMESIS_BRUTE_DONE;
         }
         return NEMESIS_BRUTE_INTERRUPTED;
@@ -267,7 +367,7 @@ NEMESIS_brute_status_t NEMESIS_bruteforce(void) {
  * @param config Configuration des règles de mangling à appliquer
  * @return Status de l'attaque (DONE, ERROR, INTERRUPTED)
  */
-NEMESIS_brute_status_t NEMESIS_bruteforce_mangling(ManglingConfig config) {
+/*NEMESIS_brute_status_t NEMESIS_bruteforce_mangling(ManglingConfig config) {
 
     print_slow("Debut de l'attaque Bruteforce...\n",SPEED_PRINT);
 
@@ -415,7 +515,7 @@ NEMESIS_brute_status_t NEMESIS_bruteforce_mangling(ManglingConfig config) {
     printf("\n");
     fflush(stdout);
     return NEMESIS_BRUTE_DONE;
-}
+}*/
 
 
 /**

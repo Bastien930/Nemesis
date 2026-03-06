@@ -42,25 +42,27 @@ void hashset_init(HashSet *hs) {
  * @param str La chaîne à ajouter
  * @return 1 si la chaîne a été ajoutée, 0 si elle était déjà présente
  */
-int hashset_add(HashSet *hs,const char *str) {
+int hashset_add(HashSet *hs, const char *str) {
+    if (!str || str[0] == '\0') return 0;  // ← garde
+
     uint32_t idx = hash_string(str);
     HashNode *node = hs->buckets[idx];
 
-    // Chercher si existe déjà
     while (node) {
-        if (strcmp(node->key, str) == 0) {
-            return 0;  // Déjà présent
-        }
+        if (strcmp(node->key, str) == 0) return 0;
         node = node->next;
     }
 
-    // Ajouter nouveau noeud
     HashNode *new_node = malloc(sizeof(HashNode));
+    if (!new_node) return 0;
+
     new_node->key = strdup(str);
+    if (!new_node->key) { free(new_node); return 0; }  // ← garde
+
     new_node->next = hs->buckets[idx];
     hs->buckets[idx] = new_node;
     hs->count++;
-    return 1;  // Nouveau
+    return 1;
 }
 
 /**
@@ -78,4 +80,17 @@ void hashset_free(HashSet *hs) {
             free(tmp);
         }
     }
+}
+void hashset_reset(HashSet *hs) {
+    for (int i = 0; i < HASHSET_SIZE; i++) {
+        HashNode *node = hs->buckets[i];
+        while (node) {
+            HashNode *tmp = node;
+            node = node->next;
+            free(tmp->key);
+            free(tmp);
+        }
+        hs->buckets[i] = NULL;
+    }
+    hs->count = 0;
 }

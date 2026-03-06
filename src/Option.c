@@ -89,7 +89,6 @@ int parse_args(int argc, char *argv[], NEMESIS_config_t *cfg) {
         }
 
         case 'h': {
-            printf("avant print\n");
             NEMESIS_print_usage(argv[0]);
             return_value = 2;
             break;

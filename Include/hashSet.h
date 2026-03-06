@@ -5,7 +5,8 @@
 #ifndef NEMESIS_HASHSET_H
 #define NEMESIS_HASHSET_H
 
-#define HASHSET_SIZE 65536  // 2^16, ajustez selon vos besoins
+#define HASHSET_SIZE 512
+#include <stddef.h>
 
 typedef struct HashNode {
     char *key;
@@ -21,6 +22,6 @@ typedef struct {
 void hashset_free(HashSet *hs) ;
 int hashset_add(HashSet *hs,const char *str) ;
 void hashset_init(HashSet *hs) ;
-
+void hashset_reset(HashSet *hs) ;
 
 #endif //NEMESIS_HASHSET_H

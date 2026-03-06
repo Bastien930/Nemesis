@@ -4,6 +4,7 @@
 
 #ifndef NEMESIS_MANGLING_H
 #define NEMESIS_MANGLING_H
+#include "hashSet.h"
 
 // mangling.
 
@@ -21,7 +22,7 @@ typedef struct {
 } ManglingConfig;
 
 
-void generate_mangled_words(const char *base_word, ManglingConfig *config);
+void generate_mangled_words(const char *base_word, ManglingConfig *config,HashSet *hs);
 void print_usage_example() ;
 
 ManglingConfig get_config_aggressive() ;

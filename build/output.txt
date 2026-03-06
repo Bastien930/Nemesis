@@ -48,3 +48,1519 @@ Statistiques:
 
 ========================================
 
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-23 22:26:07
+========================================
+
+Utilisateur: user4bf
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 83977
+  Temps réel: 20.42 secondes
+  Temps CPU: 296.10 secondes
+  Débit: 4112.93 mots/seconde
+  Ratio CPU/Temps: 14.50x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-23 22:38:42
+========================================
+
+Utilisateur: user4bf
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 434388
+  Temps réel: 83.46 secondes
+  Temps CPU: 1241.18 secondes
+  Débit: 5204.80 mots/seconde
+  Ratio CPU/Temps: 14.87x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-23 23:09:10
+========================================
+
+Utilisateur: user4bf
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 14910
+  Temps réel: 3.68 secondes
+  Temps CPU: 41.33 secondes
+  Débit: 4054.65 mots/seconde
+  Ratio CPU/Temps: 11.24x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-23 23:09:46
+========================================
+
+Utilisateur: user4bf
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 14910
+  Temps réel: 3.68 secondes
+  Temps CPU: 40.69 secondes
+  Débit: 4055.83 mots/seconde
+  Ratio CPU/Temps: 11.07x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-23 23:12:15
+========================================
+
+Utilisateur: user4bf
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 14910
+  Temps réel: 3.68 secondes
+  Temps CPU: 41.13 secondes
+  Débit: 4054.33 mots/seconde
+  Ratio CPU/Temps: 11.18x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-23 23:44:52
+========================================
+
+Utilisateur: user4bf
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 238335
+  Temps réel: 39.93 secondes
+  Temps CPU: 583.27 secondes
+  Débit: 5969.51 mots/seconde
+  Ratio CPU/Temps: 14.61x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-23 23:47:52
+========================================
+
+Utilisateur: user4bf
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 238335
+  Temps réel: 41.27 secondes
+  Temps CPU: 604.53 secondes
+  Débit: 5775.52 mots/seconde
+  Ratio CPU/Temps: 14.65x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-23 23:56:31
+========================================
+
+Utilisateur: user4bf
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 238335
+  Temps réel: 40.58 secondes
+  Temps CPU: 591.04 secondes
+  Débit: 5873.06 mots/seconde
+  Ratio CPU/Temps: 14.56x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-23 23:57:53
+========================================
+
+Utilisateur: user4bf
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 238335
+  Temps réel: 42.43 secondes
+  Temps CPU: 620.91 secondes
+  Débit: 5616.64 mots/seconde
+  Ratio CPU/Temps: 14.63x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-24 00:01:10
+========================================
+
+Utilisateur: user4bf
+Statut: TROUVÉ ✓
+Password: ar4
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 219737
+  Temps réel: 39.53 secondes
+  Temps CPU: 578.46 secondes
+  Débit: 5558.54 mots/seconde
+  Ratio CPU/Temps: 14.63x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-25 22:33:07
+========================================
+
+Utilisateur: user4bf
+Statut: TROUVÉ ✓
+Password: ar4
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 174608
+  Temps réel: 32.58 secondes
+  Temps CPU: 476.85 secondes
+  Débit: 5360.09 mots/seconde
+  Ratio CPU/Temps: 14.64x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-25 22:39:54
+========================================
+
+Utilisateur: user
+Statut: TROUVÉ ✓
+Password: aj!
+
+Détails du hash:
+  Hash: 7rkVLbEXKNiG9n1Bp6tWc5lvZ9eMHb0KV2ri.4oQte4
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 6879
+  Temps réel: 1.68 secondes
+  Temps CPU: 15.03 secondes
+  Débit: 4104.04 mots/seconde
+  Ratio CPU/Temps: 8.97x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-25 22:40:58
+========================================
+
+Utilisateur: user4bf
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 96888
+  Temps réel: 15.28 secondes
+  Temps CPU: 219.05 secondes
+  Débit: 6339.48 mots/seconde
+  Ratio CPU/Temps: 14.33x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-25 22:49:28
+========================================
+
+Utilisateur: user
+Statut: TROUVÉ ✓
+Password: cj!
+
+Détails du hash:
+  Hash: P/z/bIz4gHwSs1uJuL1aKJKCqz4Q9eAV7t0AoQeJvJ6
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 6896
+  Temps réel: 1.93 secondes
+  Temps CPU: 15.31 secondes
+  Débit: 3572.02 mots/seconde
+  Ratio CPU/Temps: 7.93x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-25 22:54:17
+========================================
+
+Utilisateur: user
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: 00DI7Qpy3fMS0mXn8c0alS8mH9UFblEmW4JktDCGGY7
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 889919
+  Temps réel: 146.16 secondes
+  Temps CPU: 2160.33 secondes
+  Débit: 6088.68 mots/seconde
+  Ratio CPU/Temps: 14.78x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-25 22:59:13
+========================================
+
+Utilisateur: user
+Statut: TROUVÉ ✓
+Password: naruto
+
+Détails du hash:
+  Hash: exmORqpQKlO2Qe5ae1OrNQr5T0xTpNHUpTC7msmNBUB
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 1158
+  Temps réel: 2.86 secondes
+  Temps CPU: 4.14 secondes
+  Débit: 404.66 mots/seconde
+  Ratio CPU/Temps: 1.45x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-25 23:01:19
+========================================
+
+Utilisateur: user
+Statut: TROUVÉ ✓
+Password: naruto123
+
+Détails du hash:
+  Hash: Q51K0IwxVmJmfRolNMWakaCzMc5mZn/yNIKueZtrlj2
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 9086
+  Temps réel: 14.02 secondes
+  Temps CPU: 22.46 secondes
+  Débit: 648.23 mots/seconde
+  Ratio CPU/Temps: 1.60x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-25 23:02:41
+========================================
+
+Utilisateur: user
+Statut: TROUVÉ ✓
+Password: naruto123
+
+Détails du hash:
+  Hash: Q51K0IwxVmJmfRolNMWakaCzMc5mZn/yNIKueZtrlj2
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 9086
+  Temps réel: 14.17 secondes
+  Temps CPU: 23.22 secondes
+  Débit: 641.29 mots/seconde
+  Ratio CPU/Temps: 1.64x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-25 23:04:16
+========================================
+
+Utilisateur: user4bf
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 0
+  Temps réel: -20596.79 secondes
+  Temps CPU: -0.00 secondes
+  Débit: 0.00 mots/seconde
+  Ratio CPU/Temps: 0.00x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-25 23:04:41
+========================================
+
+Utilisateur: user4bf
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 0
+  Temps réel: -20621.40 secondes
+  Temps CPU: -0.00 secondes
+  Débit: 0.00 mots/seconde
+  Ratio CPU/Temps: 0.00x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-25 23:28:22
+========================================
+
+Utilisateur: user
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: D6pUmuzYbaJAemIlExwBxzMYdLg/Gwvi9bL87fkfV58
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 217877
+  Temps réel: 51.19 secondes
+  Temps CPU: 735.43 secondes
+  Débit: 4256.54 mots/seconde
+  Ratio CPU/Temps: 14.37x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-25 23:30:00
+========================================
+
+Utilisateur: user
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: D6pUmuzYbaJAemIlExwBxzMYdLg/Gwvi9bL87fkfV58
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 141669
+  Temps réel: 34.05 secondes
+  Temps CPU: 479.31 secondes
+  Débit: 4160.02 mots/seconde
+  Ratio CPU/Temps: 14.07x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-25 23:50:53
+========================================
+
+Utilisateur: naruto
+Statut: TROUVÉ ✓
+Password: naruto
+
+Détails du hash:
+  Hash: exmORqpQKlO2Qe5ae1OrNQr5T0xTpNHUpTC7msmNBUB
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 19536
+  Temps réel: 21.21 secondes
+  Temps CPU: 36.00 secondes
+  Débit: 921.03 mots/seconde
+  Ratio CPU/Temps: 1.70x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-25 23:51:18
+========================================
+
+Utilisateur: naruto123
+Statut: TROUVÉ ✓
+Password: naruto123
+
+Détails du hash:
+  Hash: Q51K0IwxVmJmfRolNMWakaCzMc5mZn/yNIKueZtrlj2
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 19536
+  Temps réel: 20.68 secondes
+  Temps CPU: 35.24 secondes
+  Débit: 944.82 mots/seconde
+  Ratio CPU/Temps: 1.70x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 00:11:22
+========================================
+
+Utilisateur: naruto
+Statut: TROUVÉ ✓
+Password: naruto
+
+Détails du hash:
+  Hash: exmORqpQKlO2Qe5ae1OrNQr5T0xTpNHUpTC7msmNBUB
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 19536
+  Temps réel: 20.38 secondes
+  Temps CPU: 35.10 secondes
+  Débit: 958.54 mots/seconde
+  Ratio CPU/Temps: 1.72x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 00:15:24
+========================================
+
+Utilisateur: naruto
+Statut: TROUVÉ ✓
+Password: naruto
+
+Détails du hash:
+  Hash: exmORqpQKlO2Qe5ae1OrNQr5T0xTpNHUpTC7msmNBUB
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 1162
+  Temps réel: 3.21 secondes
+  Temps CPU: 8.83 secondes
+  Débit: 361.75 mots/seconde
+  Ratio CPU/Temps: 2.75x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 00:17:05
+========================================
+
+Utilisateur: naruto
+Statut: TROUVÉ ✓
+Password: naruto
+
+Détails du hash:
+  Hash: exmORqpQKlO2Qe5ae1OrNQr5T0xTpNHUpTC7msmNBUB
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 1184
+  Temps réel: 3.17 secondes
+  Temps CPU: 8.25 secondes
+  Débit: 373.74 mots/seconde
+  Ratio CPU/Temps: 2.60x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 00:17:37
+========================================
+
+Utilisateur: naruto123
+Statut: TROUVÉ ✓
+Password: naruto123
+
+Détails du hash:
+  Hash: Q51K0IwxVmJmfRolNMWakaCzMc5mZn/yNIKueZtrlj2
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 104325
+  Temps réel: 27.71 secondes
+  Temps CPU: 383.27 secondes
+  Débit: 3765.05 mots/seconde
+  Ratio CPU/Temps: 13.83x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 00:29:43
+========================================
+
+Utilisateur: naruto
+Statut: TROUVÉ ✓
+Password: naruto
+
+Détails du hash:
+  Hash: exmORqpQKlO2Qe5ae1OrNQr5T0xTpNHUpTC7msmNBUB
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 19536
+  Temps réel: 20.62 secondes
+  Temps CPU: 34.97 secondes
+  Débit: 947.34 mots/seconde
+  Ratio CPU/Temps: 1.70x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 00:49:59
+========================================
+
+Utilisateur: naruto
+Statut: TROUVÉ ✓
+Password: naruto
+
+Détails du hash:
+  Hash: exmORqpQKlO2Qe5ae1OrNQr5T0xTpNHUpTC7msmNBUB
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 19536
+  Temps réel: 13.92 secondes
+  Temps CPU: 22.17 secondes
+  Débit: 1403.53 mots/seconde
+  Ratio CPU/Temps: 1.59x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 00:50:18
+========================================
+
+Utilisateur: naruto123
+Statut: TROUVÉ ✓
+Password: naruto123
+
+Détails du hash:
+  Hash: Q51K0IwxVmJmfRolNMWakaCzMc5mZn/yNIKueZtrlj2
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 19536
+  Temps réel: 14.16 secondes
+  Temps CPU: 23.75 secondes
+  Débit: 1379.73 mots/seconde
+  Ratio CPU/Temps: 1.68x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 00:53:11
+========================================
+
+Utilisateur: naruto
+Statut: TROUVÉ ✓
+Password: naruto
+
+Détails du hash:
+  Hash: exmORqpQKlO2Qe5ae1OrNQr5T0xTpNHUpTC7msmNBUB
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 1112
+  Temps réel: 2.87 secondes
+  Temps CPU: 3.82 secondes
+  Débit: 386.88 mots/seconde
+  Ratio CPU/Temps: 1.33x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 00:53:40
+========================================
+
+Utilisateur: naruto123
+Statut: TROUVÉ ✓
+Password: naruto123
+
+Détails du hash:
+  Hash: Q51K0IwxVmJmfRolNMWakaCzMc5mZn/yNIKueZtrlj2
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 104744
+  Temps réel: 24.17 secondes
+  Temps CPU: 335.34 secondes
+  Débit: 4333.91 mots/seconde
+  Ratio CPU/Temps: 13.87x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:00:54
+========================================
+
+Utilisateur: naruto
+Statut: TROUVÉ ✓
+Password: naruto
+
+Détails du hash:
+  Hash: exmORqpQKlO2Qe5ae1OrNQr5T0xTpNHUpTC7msmNBUB
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 1125
+  Temps réel: 2.84 secondes
+  Temps CPU: 3.80 secondes
+  Débit: 396.82 mots/seconde
+  Ratio CPU/Temps: 1.34x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:01:21
+========================================
+
+Utilisateur: naruto123
+Statut: TROUVÉ ✓
+Password: naruto123
+
+Détails du hash:
+  Hash: Q51K0IwxVmJmfRolNMWakaCzMc5mZn/yNIKueZtrlj2
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 104584
+  Temps réel: 22.13 secondes
+  Temps CPU: 304.28 secondes
+  Débit: 4726.39 mots/seconde
+  Ratio CPU/Temps: 13.75x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:12:35
+========================================
+
+Utilisateur: naruto
+Statut: TROUVÉ ✓
+Password: naruto
+
+Détails du hash:
+  Hash: exmORqpQKlO2Qe5ae1OrNQr5T0xTpNHUpTC7msmNBUB
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 1145
+  Temps réel: 2.89 secondes
+  Temps CPU: 3.91 secondes
+  Débit: 396.56 mots/seconde
+  Ratio CPU/Temps: 1.35x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:13:12
+========================================
+
+Utilisateur: naruto
+Statut: TROUVÉ ✓
+Password: naruto
+
+Détails du hash:
+  Hash: exmORqpQKlO2Qe5ae1OrNQr5T0xTpNHUpTC7msmNBUB
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 1153
+  Temps réel: 2.83 secondes
+  Temps CPU: 3.90 secondes
+  Débit: 406.97 mots/seconde
+  Ratio CPU/Temps: 1.38x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:34:47
+========================================
+
+Utilisateur: user
+Statut: TROUVÉ ✓
+Password: cj!
+
+Détails du hash:
+  Hash: P/z/bIz4gHwSs1uJuL1aKJKCqz4Q9eAV7t0AoQeJvJ6
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 15797
+  Temps réel: 3.18 secondes
+  Temps CPU: 34.36 secondes
+  Débit: 4974.20 mots/seconde
+  Ratio CPU/Temps: 10.82x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:35:08
+========================================
+
+Utilisateur: naruto
+Statut: TROUVÉ ✓
+Password: naruto
+
+Détails du hash:
+  Hash: exmORqpQKlO2Qe5ae1OrNQr5T0xTpNHUpTC7msmNBUB
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 1156
+  Temps réel: 2.86 secondes
+  Temps CPU: 3.99 secondes
+  Débit: 404.03 mots/seconde
+  Ratio CPU/Temps: 1.39x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:35:31
+========================================
+
+Utilisateur: naruto123
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: Q51K0IwxVmJmfRolNMWakaCzMc5mZn/yNIKueZtrlj2
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 69708
+  Temps réel: 5.34 secondes
+  Temps CPU: 47.43 secondes
+  Débit: 13046.12 mots/seconde
+  Ratio CPU/Temps: 8.88x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:35:55
+========================================
+
+Utilisateur: naruto123
+Statut: TROUVÉ ✓
+Password: naruto123
+
+Détails du hash:
+  Hash: Q51K0IwxVmJmfRolNMWakaCzMc5mZn/yNIKueZtrlj2
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 100122
+  Temps réel: 14.67 secondes
+  Temps CPU: 65.55 secondes
+  Débit: 6825.67 mots/seconde
+  Ratio CPU/Temps: 4.47x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:39:24
+========================================
+
+Utilisateur: user
+Statut: TROUVÉ ✓
+Password: cj!
+
+Détails du hash:
+  Hash: P/z/bIz4gHwSs1uJuL1aKJKCqz4Q9eAV7t0AoQeJvJ6
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 15825
+  Temps réel: 3.18 secondes
+  Temps CPU: 34.67 secondes
+  Débit: 4976.78 mots/seconde
+  Ratio CPU/Temps: 10.90x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:39:42
+========================================
+
+Utilisateur: naruto
+Statut: TROUVÉ ✓
+Password: naruto
+
+Détails du hash:
+  Hash: exmORqpQKlO2Qe5ae1OrNQr5T0xTpNHUpTC7msmNBUB
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 1142
+  Temps réel: 2.88 secondes
+  Temps CPU: 3.97 secondes
+  Débit: 397.02 mots/seconde
+  Ratio CPU/Temps: 1.38x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:40:24
+========================================
+
+Utilisateur: naruto123
+Statut: TROUVÉ ✓
+Password: naruto123
+
+Détails du hash:
+  Hash: Q51K0IwxVmJmfRolNMWakaCzMc5mZn/yNIKueZtrlj2
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 513930
+  Temps réel: 28.95 secondes
+  Temps CPU: 401.70 secondes
+  Débit: 17755.22 mots/seconde
+  Ratio CPU/Temps: 13.88x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:41:16
+========================================
+
+Utilisateur: naruto
+Statut: TROUVÉ ✓
+Password: naruto
+
+Détails du hash:
+  Hash: exmORqpQKlO2Qe5ae1OrNQr5T0xTpNHUpTC7msmNBUB
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 512820
+  Temps réel: 28.94 secondes
+  Temps CPU: 401.47 secondes
+  Débit: 17720.79 mots/seconde
+  Ratio CPU/Temps: 13.87x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:42:33
+========================================
+
+Utilisateur: user
+Statut: TROUVÉ ✓
+Password: cj!
+
+Détails du hash:
+  Hash: P/z/bIz4gHwSs1uJuL1aKJKCqz4Q9eAV7t0AoQeJvJ6
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 15824
+  Temps réel: 3.17 secondes
+  Temps CPU: 35.48 secondes
+  Débit: 4988.08 mots/seconde
+  Ratio CPU/Temps: 11.18x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:43:22
+========================================
+
+Utilisateur: naruto
+Statut: TROUVÉ ✓
+Password: naruto
+
+Détails du hash:
+  Hash: exmORqpQKlO2Qe5ae1OrNQr5T0xTpNHUpTC7msmNBUB
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 1093
+  Temps réel: 2.85 secondes
+  Temps CPU: 3.77 secondes
+  Débit: 382.91 mots/seconde
+  Ratio CPU/Temps: 1.32x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:44:06
+========================================
+
+Utilisateur: naruto
+Statut: TROUVÉ ✓
+Password: naruto
+
+Détails du hash:
+  Hash: exmORqpQKlO2Qe5ae1OrNQr5T0xTpNHUpTC7msmNBUB
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 512376
+  Temps réel: 29.04 secondes
+  Temps CPU: 403.69 secondes
+  Débit: 17642.36 mots/seconde
+  Ratio CPU/Temps: 13.90x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:44:44
+========================================
+
+Utilisateur: naruto123
+Statut: TROUVÉ ✓
+Password: naruto123
+
+Détails du hash:
+  Hash: Q51K0IwxVmJmfRolNMWakaCzMc5mZn/yNIKueZtrlj2
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 532578
+  Temps réel: 33.47 secondes
+  Temps CPU: 470.79 secondes
+  Débit: 15911.75 mots/seconde
+  Ratio CPU/Temps: 14.07x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:45:27
+========================================
+
+Utilisateur: user4bf
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 68507
+  Temps réel: 11.13 secondes
+  Temps CPU: 156.87 secondes
+  Débit: 6153.51 mots/seconde
+  Ratio CPU/Temps: 14.09x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:45:56
+========================================
+
+Utilisateur: user4bf
+Statut: TROUVÉ ✓
+Password: ar4
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 114160
+  Temps réel: 18.97 secondes
+  Temps CPU: 273.45 secondes
+  Débit: 6018.05 mots/seconde
+  Ratio CPU/Temps: 14.41x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-26 01:49:58
+========================================
+
+Utilisateur: user4bf
+Statut: TROUVÉ ✓
+Password: ar4
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 185237
+  Temps réel: 28.97 secondes
+  Temps CPU: 422.96 secondes
+  Débit: 6394.15 mots/seconde
+  Ratio CPU/Temps: 14.60x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-02-27 09:51:30
+========================================
+
+Utilisateur: user4bf
+Statut: TROUVÉ ✓
+Password: ar4
+
+Détails du hash:
+  Hash: WR1oZSP9zT6x4BEFtJiDWplVMb1eNhZu1/e900iLfjD
+  Salt: $5$j457LH1.xr2UGPzo$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 182676
+  Temps réel: 31.76 secondes
+  Temps CPU: 465.67 secondes
+  Débit: 5752.45 mots/seconde
+  Ratio CPU/Temps: 14.66x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-03-04 12:39:35
+========================================
+
+Utilisateur: naruto
+Statut: TROUVÉ ✓
+Password: naruto
+
+Détails du hash:
+  Hash: exmORqpQKlO2Qe5ae1OrNQr5T0xTpNHUpTC7msmNBUB
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 1115
+  Temps réel: 3.38 secondes
+  Temps CPU: 7.31 secondes
+  Débit: 329.94 mots/seconde
+  Ratio CPU/Temps: 2.16x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-03-04 12:40:41
+========================================
+
+Utilisateur: naruto
+Statut: TROUVÉ ✓
+Password: naruto
+
+Détails du hash:
+  Hash: exmORqpQKlO2Qe5ae1OrNQr5T0xTpNHUpTC7msmNBUB
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 509712
+  Temps réel: 50.05 secondes
+  Temps CPU: 714.95 secondes
+  Débit: 10185.05 mots/seconde
+  Ratio CPU/Temps: 14.29x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-03-04 12:41:35
+========================================
+
+Utilisateur: naruto123
+Statut: TROUVÉ ✓
+Password: naruto123
+
+Détails du hash:
+  Hash: Q51K0IwxVmJmfRolNMWakaCzMc5mZn/yNIKueZtrlj2
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 506604
+  Temps réel: 49.73 secondes
+  Temps CPU: 710.19 secondes
+  Débit: 10186.78 mots/seconde
+  Ratio CPU/Temps: 14.28x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-03-04 12:42:31
+========================================
+
+Utilisateur: user
+Statut: TROUVÉ ✓
+Password: cj!
+
+Détails du hash:
+  Hash: P/z/bIz4gHwSs1uJuL1aKJKCqz4Q9eAV7t0AoQeJvJ6
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 16599
+  Temps réel: 5.44 secondes
+  Temps CPU: 69.47 secondes
+  Débit: 3051.97 mots/seconde
+  Ratio CPU/Temps: 12.77x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-03-04 12:42:46
+========================================
+
+Utilisateur: user
+Statut: NON TROUVÉ ✗
+
+Détails du hash:
+  Hash: P/z/bIz4gHwSs1uJuL1aKJKCqz4Q9eAV7t0AoQeJvJ6
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 8769
+  Temps réel: 3.06 secondes
+  Temps CPU: 35.84 secondes
+  Débit: 2863.71 mots/seconde
+  Ratio CPU/Temps: 11.70x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-03-04 12:42:59
+========================================
+
+Utilisateur: user
+Statut: TROUVÉ ✓
+Password: cj!
+
+Détails du hash:
+  Hash: P/z/bIz4gHwSs1uJuL1aKJKCqz4Q9eAV7t0AoQeJvJ6
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 7489
+  Temps réel: 2.94 secondes
+  Temps CPU: 30.77 secondes
+  Débit: 2545.24 mots/seconde
+  Ratio CPU/Temps: 10.46x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-03-04 12:48:26
+========================================
+
+Utilisateur: user
+Statut: TROUVÉ ✓
+Password: cj!
+
+Détails du hash:
+  Hash: P/z/bIz4gHwSs1uJuL1aKJKCqz4Q9eAV7t0AoQeJvJ6
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 15656
+  Temps réel: 6.47 secondes
+  Temps CPU: 85.66 secondes
+  Débit: 2419.99 mots/seconde
+  Ratio CPU/Temps: 13.24x
+
+========================================
+
+
+
+========================================
+NEMESIS - Résultat de craquage
+Date: 2026-03-04 13:05:56
+========================================
+
+Utilisateur: user
+Statut: TROUVÉ ✓
+Password: cj!
+
+Détails du hash:
+  Hash: P/z/bIz4gHwSs1uJuL1aKJKCqz4Q9eAV7t0AoQeJvJ6
+  Salt: $5$abcd1234$
+  Algorithme: SHA-256
+
+Statistiques:
+  Mots testés: 15715
+  Temps réel: 5.44 secondes
+  Temps CPU: 69.35 secondes
+  Débit: 2889.88 mots/seconde
+  Ratio CPU/Temps: 12.75x
+
+========================================
+
