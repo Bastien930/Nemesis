@@ -1,4 +1,4 @@
-# NEMESIS — Outil d'analyse et d'audit (usage autorisé)
+# NEMESIS - Outil d'analyse et d'audit (usage autorisé)
 
 NEMESIS est un outil en C permettant d’analyser des fichiers de type *shadow* et
 d'exécuter des tests basés sur un dictionnaire dans un cadre légal : audit
