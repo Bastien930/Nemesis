@@ -123,12 +123,30 @@ nemesis --resume
 ```
 /src
   main.c
-  core.c
-  core.h
-  utils.c
-  utils.h
+  Config.c
+  Dictionnary.c
+  Hash_Engine.c
+  Option.c
+  Shadow.c
+  shadow_io.c
+  Utils.c
+  brute_force.c
+  HashSet.c
+  log.c
+  mangling.c
 /include
-  config.h
+  Config.h
+  Dictionnary.h
+  hash_Engine.h
+  Mangling.h
+  Option.h
+  Shadow.h
+  Shadow_io.h
+  Utils.h
+  brute_force.h
+  hashSet.h
+  log.h
+  main.h
 /docs
   nemesis.1
 Makefile
